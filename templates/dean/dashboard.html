@@ -1,0 +1,218 @@
+{% load static %}
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Dekan Paneli</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: #f8f9fa;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .card {
+      border: none;
+      border-radius: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transition: all 0.2s ease-in-out;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+    .card-header {
+      font-weight: 600;
+      background: #0d6efd;
+      color: white;
+      border-top-left-radius: 1rem !important;
+      border-top-right-radius: 1rem !important;
+    }
+    .card-body h5 {
+      font-weight: 600;
+      color: #0d6efd;
+      border-bottom: 2px solid #0d6efd20;
+      padding-bottom: 6px;
+      margin-bottom: 1rem;
+    }
+    hr {
+      border-top: 2px solid #dee2e6;
+      margin: 3rem 0;
+    }
+    .form-control {
+      border-radius: 0.5rem;
+    }
+    .alert {
+      border-radius: 0.5rem;
+    }
+    footer {
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container py-4">
+
+  <h2 class="fw-bold text-center mb-4 text-primary">🎓 Dekan Yönetim Paneli</h2>
+
+  {% if messages %}
+    <div class="mb-3">
+      {% for m in messages %}
+        <div class="alert alert-{{m.tags}} shadow-sm">{{ m }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Form Kartları -->
+  <div class="row g-4">
+    <!-- Bölüm -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5>Bölüm Ekle</h5>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_department">
+            {{ dept_form.as_p }}
+            <button class="btn btn-primary w-100 mt-2">Kaydet</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ders -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5>Ders Ekle</h5>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_course">
+            {{ course_form.as_p }}
+            <button class="btn btn-primary w-100 mt-2">Kaydet</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Öğretmen -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5>Öğretmen Ekle</h5>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_teacher">
+            {{ teacher_form.as_p }}
+            <button class="btn btn-primary w-100 mt-2">Kaydet</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Öğrenci -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5>Öğrenci Ekle</h5>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_student">
+            {{ student_form.as_p }}
+            <small class="text-muted d-block mb-2">Birden fazla bölüm için Ctrl/Cmd ile seç.</small>
+            <button class="btn btn-success w-100 mt-2">Kaydet</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Listeler -->
+  <div class="row g-4">
+    <!-- Bölümler -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card h-100">
+        <div class="card-header">📚 Bölümler</div>
+        <ul class="list-group list-group-flush">
+          {% for d in departments %}
+            <li class="list-group-item">{{ d.code }} — {{ d.name }}</li>
+          {% empty %}
+            <li class="list-group-item text-muted">Kayıt yok</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Dersler -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card h-100">
+        <div class="card-header">📖 Dersler</div>
+        <ul class="list-group list-group-flush">
+          {% for c in courses %}
+            <li class="list-group-item">
+              <strong>{{ c.code }}</strong> — {{ c.name }}
+              <small class="text-muted d-block">
+                {% for d in c.department.all %}
+                  {{ d.code }}{% if not forloop.last %}, {% endif %}
+                {% empty %}(Bölüm yok){% endfor %}
+              </small>
+            </li>
+          {% empty %}
+            <li class="list-group-item text-muted">Kayıt yok</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Öğretmenler -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card h-100">
+        <div class="card-header">👨‍🏫 Öğretmenler</div>
+        <ul class="list-group list-group-flush">
+          {% for t in teachers %}
+            <li class="list-group-item">{{ t.name }} <small class="text-muted">{{ t.e_mail }}</small></li>
+          {% empty %}
+            <li class="list-group-item text-muted">Kayıt yok</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Öğrenciler -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card h-100">
+        <div class="card-header">🎓 Öğrenciler</div>
+        <ul class="list-group list-group-flush">
+          {% for s in students %}
+            <li class="list-group-item">
+              <div class="fw-semibold">{{ s.student_no }} — {{ s.full_name|default:s.name }}</div>
+              <div class="small text-muted">
+                Bölüm(ler):
+                {% for d in s.departments.all %}
+                  {{ d.code }}{% if not forloop.last %}, {% endif %}
+                {% empty %}-{% endfor %}
+              </div>
+            </li>
+          {% empty %}
+            <li class="list-group-item text-muted">Kayıt yok</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer class="mt-5">
+    <p>© 2025 Popeyes SIS — Dekan Yönetim Sistemi</p>
+  </footer>
+
+</div>
+
+</body>
+</html>
