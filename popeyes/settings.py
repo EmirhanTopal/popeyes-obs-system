@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     "hod",
     "dean",
     "accounts",
-    "academics"
+    "academics",
+    "courses",
+    "grades"
 ]
 
 MIDDLEWARE = [
