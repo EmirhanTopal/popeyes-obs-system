@@ -43,9 +43,9 @@ INSTALLED_APPS = [
     "dean",
     "accounts",
     "academics",
-    "courses",
+    "departments",
     "grades",
-    "departments"
+    "courses"
 ]
 
 MIDDLEWARE = [
