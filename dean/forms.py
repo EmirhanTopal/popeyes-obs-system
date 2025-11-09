@@ -1,9 +1,9 @@
 # dean/forms.py
 from django import forms
-from department.models import Department
-from course.models import Course
-from teacher.models import Teacher
-from student.models import Student
+from departments.models import Department
+from courses.models import Course
+from teachers.models import Teacher
+from students.models import Student
 
 
 class DepartmentForm(forms.ModelForm):
@@ -31,7 +31,7 @@ class CourseForm(forms.ModelForm):
         }
 
 
-class TeacherForm(forms.ModelForm):
+"""class TeacherForm(forms.ModelForm):
     class Meta:
         model = Teacher
         fields = ["name", "e_mail", "department"]
@@ -40,7 +40,7 @@ class TeacherForm(forms.ModelForm):
             "name": forms.TextInput(attrs={"class": "form-control"}),
             "e_mail": forms.EmailInput(attrs={"class": "form-control"}),
             "department": forms.Select(attrs={"class": "form-select"}),
-        }
+        }"""
 
 
 class StudentForm(forms.ModelForm):
