@@ -1,6 +1,6 @@
 from django.db import models
 
-from academics.models import Department
+from departments.models import Department
 
 
 class Teacher(models.Model):

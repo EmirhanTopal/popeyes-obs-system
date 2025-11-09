@@ -1,29 +1,55 @@
+# dean/forms.py
 from django import forms
-from academics.models import Department, Course
-from students.models import Student
-from teachers.models import Teacher
+from department.models import Department
+from course.models import Course
+from teacher.models import Teacher
+from student.models import Student
+
 
 class DepartmentForm(forms.ModelForm):
     class Meta:
         model = Department
-        fields = ["code", "name"]
+        fields = ["code", "name", "faculty"]
+        labels = {"code": "Bölüm Kodu", "name": "Bölüm Adı", "faculty": "Fakülte"}
+        widgets = {
+            "code": forms.TextInput(attrs={"class": "form-control"}),
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "faculty": forms.Select(attrs={"class": "form-select"}),
+        }
+
 
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        fields = ["code", "name", "department","level"]
+        fields = ["code", "name", "credit", "department"]
+        labels = {"code": "Ders Kodu", "name": "Ders Adı", "credit": "Kredi", "department": "Bölüm"}
+        widgets = {
+            "code": forms.TextInput(attrs={"class": "form-control"}),
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "credit": forms.NumberInput(attrs={"class": "form-control"}),
+            "department": forms.SelectMultiple(attrs={"class": "form-select", "size": "4"}),
+        }
+
 
 class TeacherForm(forms.ModelForm):
     class Meta:
         model = Teacher
-        fields = ["full_name","department"]
+        fields = ["name", "e_mail", "department"]
+        labels = {"name": "Ad Soyad", "e_mail": "E-posta", "department": "Bölüm"}
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "e_mail": forms.EmailInput(attrs={"class": "form-control"}),
+            "department": forms.Select(attrs={"class": "form-select"}),
+        }
+
 
 class StudentForm(forms.ModelForm):
-    departments = forms.ModelMultipleChoiceField(
-        queryset=Department.objects.all(),
-        widget=forms.SelectMultiple(attrs={"size": 6}),
-        required=False
-    )
     class Meta:
         model = Student
-        fields = ["full_name", "student_no", "departments", "advisor","student_level"]
+        fields = ["student_no", "full_name", "departments"]
+        labels = {"student_no": "Öğrenci No", "full_name": "Ad Soyad", "departments": "Bölüm(ler)"}
+        widgets = {
+            "student_no": forms.TextInput(attrs={"class": "form-control"}),
+            "full_name": forms.TextInput(attrs={"class": "form-control"}),
+            "departments": forms.SelectMultiple(attrs={"class": "form-select", "size": "4"}),
+        }
