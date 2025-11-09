@@ -1,5 +1,6 @@
+from departments.models import Department
+from academics.models import Level
 from django.db import models
-from academics.models import Department, Level
 from teachers.models import Teacher
 
 class Student(models.Model):

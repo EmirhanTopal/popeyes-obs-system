@@ -1,6 +1,10 @@
 # academics/views.py
 from django.shortcuts import render, get_object_or_404
-from .models import Faculty, Department, Level, Course
+from faculty.models import Faculty
+from departments.models import Department
+from courses.models import Course
+from academics.models import Level  # eğer Level modelin hâlâ academics içindeyse
+
 
 
 def faculty_list(request):
