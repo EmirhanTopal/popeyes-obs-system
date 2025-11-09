@@ -1,9 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import User
+from accounts.models import SimpleUser
 from django.db import models
 
 class Dean(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(SimpleUser, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=100)
     faculty = models.ForeignKey(
         'faculty.Faculty',

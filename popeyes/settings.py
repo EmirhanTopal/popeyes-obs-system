@@ -37,6 +37,8 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
 
+LOGIN_URL = '/'
+
 # Application definition
 
 INSTALLED_APPS = [
