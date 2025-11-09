@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from .models import SimpleUser
+from django.views.decorators.csrf import csrf_protect
 
+@csrf_protect
 def login_view(request):
     role = request.session.get("role")
     if role:
@@ -18,6 +20,7 @@ def login_view(request):
         return render(request, "auth/login.html", {"error": "Kullanıcı adı veya şifre hatalı."})
 
     return render(request, "auth/login.html")
+
 
 def logout_view(request):
     request.session.flush()
