@@ -2,7 +2,6 @@ from django.contrib import admin
 from .models import Head
 from .models import (
     TeacherCourseAssignment,
-    DepartmentStatistic,
     CourseStatistic,
     TeacherPerformance,
     HeadReportLog
@@ -56,20 +55,6 @@ class TeacherCourseAssignmentAdmin(admin.ModelAdmin):
     search_fields = ("teacher__user__first_name", "teacher__user__last_name", "course__code", "course__name")
     ordering = ("-year", "semester")
     autocomplete_fields = ("teacher", "course")
-
-
-
-# ---------------------------
-# 📊 Department Statistic
-# ---------------------------
-@admin.register(DepartmentStatistic)
-class DepartmentStatisticAdmin(admin.ModelAdmin):
-    list_display = ("department", "total_students", "total_teachers", "total_courses", "success_rate", "updated_at")
-    search_fields = ("department__name",)
-    list_filter = ("department",)
-    ordering = ("department",)
-
-
 
 # ---------------------------
 # 📚 Course Statistics Admin

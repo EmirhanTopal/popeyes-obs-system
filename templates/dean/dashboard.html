@@ -1,205 +1,214 @@
 {% load static %}
+
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8">
-  <title>Dekan Paneli</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { background:#f5f7fb; }
-    .card { border:none; border-radius:1rem; box-shadow:0 4px 16px rgba(0,0,0,.06); }
-    .card-header { border-top-left-radius:1rem!important; border-top-right-radius:1rem!important; }
-    .list-group-item { border:0; border-top:1px solid #f0f2f6; }
-    .section-title { font-weight:700; color:#0d6efd; letter-spacing:.2px; }
-    .shadow-hover { transition:.15s transform ease, .15s box-shadow ease; }
-    .shadow-hover:hover { transform: translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.08); }
-  </style>
+    <meta charset="utf-8">
+    <title>Dekan Yönetim Paneli</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { background:#f5f7fb; }
+        .card { border:none; border-radius:1rem; box-shadow:0 4px 16px rgba(0,0,0,.06); }
+        .card-header { border-top-left-radius:1rem!important; border-top-right-radius:1rem!important; }
+        .list-group-item { border:0; border-top:1px solid #f0f2f6; }
+        .section-title { font-weight:700; color:#0d6efd; letter-spacing:.2px; }
+        .shadow-hover { transition:.15s transform ease, .15s box-shadow ease; cursor:pointer; }
+        .shadow-hover:hover { transform: translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.08); }
+        .badge-status { font-size: .75rem; }
+    </style>
 </head>
+
 <body>
 
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
-  <div class="container">
-    <a class="navbar-brand fw-bold text-primary" href="#">🎓 Popeyes | Dekan</a>
-    <div class="ms-auto d-flex gap-2">
-      <a class="btn btn-outline-secondary btn-sm" href="javascript:location.reload()">Yenile</a>
-      <a class="btn btn-danger btn-sm" href="/logout/">Çıkış</a>
+    <div class="container">
+        <a class="navbar-brand fw-bold text-primary" href="#">🎓 Popeyes | Dekan</a>
+
+        <div class="ms-auto d-flex gap-2">
+            <a class="btn btn-outline-secondary btn-sm" href="javascript:location.reload()">Yenile</a>
+            <a class="btn btn-danger btn-sm" href="/logout/">Çıkış</a>
+        </div>
     </div>
-  </div>
 </nav>
 
 <main class="container py-4">
 
-  <!-- Üst bilgi -->
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="section-title m-0">Dekan Yönetim Paneli</h2>
-    <div class="text-muted">
-      {% if username %}Hoş geldiniz, <strong>{{ username }}</strong>{% endif %}
-    </div>
-  </div>
-
-  <!-- Mesajlar -->
-  {% if messages %}
-    <div class="mb-3">
-      {% for m in messages %}
-        <div class="alert alert-{{ m.tags }} shadow-sm py-2">{{ m }}</div>
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  <!-- Formlar -->
-  <div class="row g-4">
-
-    <!-- Bölüm -->
-    <div class="col-lg-3 col-md-6">
-      <div class="card shadow-hover h-100">
-        <div class="card-header bg-primary text-white fw-semibold">Bölüm Ekle</div>
-        <div class="card-body">
-          <form method="post" novalidate>
-            {% csrf_token %}
-            <input type="hidden" name="action" value="create_department">
-            {{ dept_form.as_p }}
-            <button class="btn btn-primary w-100">Kaydet</button>
-          </form>
+    <!-- Başlık -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 class="section-title m-0">Dekan Yönetim Paneli</h2>
+        <div class="text-muted">
+            Hoş geldiniz, <strong>{{ username }}</strong>
         </div>
-      </div>
     </div>
 
-    <!-- Ders -->
-    <div class="col-lg-3 col-md-6">
-      <div class="card shadow-hover h-100">
-        <div class="card-header bg-primary text-white fw-semibold">Ders Ekle</div>
-        <div class="card-body">
-          <form method="post" novalidate>
-            {% csrf_token %}
-            <input type="hidden" name="action" value="create_course">
-            {{ course_form.as_p }}
-            <button class="btn btn-primary w-100">Kaydet</button>
-          </form>
+    <!-- Mesajlar -->
+    {% if messages %}
+        <div class="mb-3">
+            {% for m in messages %}
+                <div class="alert alert-{{ m.tags }} shadow-sm py-2">{{ m }}</div>
+            {% endfor %}
         </div>
-      </div>
-    </div>
+    {% endif %}
 
-    <!-- Öğretmen -->
-    <div class="col-lg-3 col-md-6">
-      <div class="card shadow-hover h-100">
-        <div class="card-header bg-primary text-white fw-semibold">Öğretmen Ekle</div>
-        <div class="card-body">
-          <form method="post" novalidate>
-            {% csrf_token %}
-            <input type="hidden" name="action" value="create_teacher">
-            {{ teacher_form.as_p }}
-            <button class="btn btn-primary w-100">Kaydet</button>
-          </form>
+
+    <div class="row g-4">
+
+        <!-- ONAY BEKLEYEN YENİ DERS OLUŞTURMA (Course) -->
+        <div class="col-lg-4">
+            <div class="card h-100 shadow-hover">
+                <div class="card-header bg-warning fw-semibold text-dark">
+                    ⏳ Yeni Ders Oluşturma Talepleri
+                </div>
+
+                <ul class="list-group list-group-flush">
+                    {% for c in pending_courses %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <div>
+                                <strong>{{ c.code }}</strong> — {{ c.name }}
+                                <div class="small text-muted">
+                                    Bölüm: {{ c.created_by_head.department.name }}
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'dean:approve_course' c.id %}" class="btn btn-success btn-sm">✔</a>
+                                <a href="{% url 'dean:reject_course' c.id %}" class="btn btn-danger btn-sm">✖</a>
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">Bekleyen ders yok.</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Öğrenci -->
-    <div class="col-lg-3 col-md-6">
-      <div class="card shadow-hover h-100">
-        <div class="card-header bg-success text-white fw-semibold">Öğrenci Ekle</div>
-        <div class="card-body">
-          <form method="post" novalidate>
-            {% csrf_token %}
-            <input type="hidden" name="action" value="create_student">
-            {{ student_form.as_p }}
-            <small class="text-muted d-block mb-2">Birden fazla bölüm için Ctrl/Cmd ile seç.</small>
-            <button class="btn btn-success w-100">Kaydet</button>
-          </form>
+
+        <!-- BÖLÜME DERS EKLEME TALEPLERİ (DepartmentCourse.pending) -->
+        <div class="col-lg-4">
+            <div class="card h-100 shadow-hover">
+                <div class="card-header bg-info text-white fw-semibold">
+                    📘 Bölüme Ders Ekleme Talepleri
+                </div>
+
+                <ul class="list-group list-group-flush">
+                    {% for dc in pending_department_courses %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <div>
+                                <strong>{{ dc.course.code }}</strong> — {{ dc.course.name }}
+                                <div class="small text-muted">
+                                    Bölüm: {{ dc.department.name }}
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'dean:approve_department_course' dc.id %}"
+                                   class="btn btn-success btn-sm">✔</a>
+
+                                <a href="{% url 'dean:reject_department_course' dc.id %}"
+                                   class="btn btn-danger btn-sm">✖</a>
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">Bekleyen talep yok.</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-      </div>
+
+
+        <!-- BÖLÜM BAŞKANI ATAMA -->
+        <div class="col-lg-4">
+            <div class="card h-100 shadow-hover">
+                <div class="card-header bg-primary text-white fw-semibold">
+                    👤 Bölüm Başkanı Atama Talepleri
+                </div>
+
+                <ul class="list-group list-group-flush">
+                    {% for req in pending_heads %}
+                        <li class="list-group-item">
+                            <strong>{{ req.department.name }}</strong> →
+                            Yeni Başkan: {{ req.new_head.full_name }}
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">Bekleyen başkan ataması bulunmuyor.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
     </div>
 
-  </div>
 
-  <hr class="my-4">
+    <!-- Bölüm Listeleme -->
+    <div class="row g-4 mt-4">
+        <div class="col-lg-4">
+            <div class="card shadow-hover">
+                <div class="card-header bg-white fw-semibold">🏫 Bölümler</div>
 
-  <!-- Listeler -->
-  <div class="row g-4">
+                <ul class="list-group list-group-flush">
+                    {% for d in departments %}
+                        <a href="?dept={{ d.id }}" class="list-group-item list-group-item-action">
+                            <strong>{{ d.code }}</strong> — {{ d.name }}
+                        </a>
+                    {% empty %}
+                        <li class="list-group-item text-muted">Kayıt yok.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
 
-    <!-- Bölümler -->
-    <div class="col-lg-3 col-md-6">
-      <div class="card h-100">
-        <div class="card-header bg-white fw-semibold">📚 Bölümler</div>
-        <ul class="list-group list-group-flush">
-          {% for d in departments %}
-            <li class="list-group-item">
-              <div class="fw-semibold">{{ d.code }} — {{ d.name }}</div>
-            </li>
-          {% empty %}
-            <li class="list-group-item text-muted">Kayıt yok</li>
-          {% endfor %}
-        </ul>
-      </div>
+
+        <!-- Bölüm Dersleri -->
+        {% if selected_department %}
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header fw-semibold">
+                    📚 {{ selected_department.name }} Bölümü — Dersler
+                </div>
+
+                <ul class="list-group list-group-flush">
+
+                    {% for dc in department_courses %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                            <div>
+                                <strong>{{ dc.course.code }}</strong> — {{ dc.course.name }}
+                                <span class="badge bg-secondary ms-2">{{ dc.semester }}. Dönem</span>
+
+                                {% if dc.is_mandatory %}
+                                    <span class="badge bg-primary">Zorunlu</span>
+                                {% else %}
+                                    <span class="badge bg-success">Seçmeli</span>
+                                {% endif %}
+                            </div>
+
+                            <span class="badge 
+                                {% if dc.approval_status == 'APPROVED' %} bg-success
+                                {% elif dc.approval_status == 'PENDING' %} bg-warning text-dark
+                                {% else %} bg-danger {% endif %}">
+                                {{ dc.get_approval_status_display }}
+                            </span>
+
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">Ders bulunmuyor.</li>
+                    {% endfor %}
+
+                </ul>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
-    <!-- Dersler -->
-    <div class="col-lg-3 col-md-6">
-      <div class="card h-100">
-        <div class="card-header bg-white fw-semibold">📖 Dersler</div>
-        <ul class="list-group list-group-flush">
-          {% for c in courses %}
-            <li class="list-group-item">
-              <div class="fw-semibold"><span class="text-primary">{{ c.code }}</span> — {{ c.name }}</div>
-              <div class="small text-muted">
-                {% for d in c.department.all %}
-                  {{ d.code }}{% if not forloop.last %}, {% endif %}
-                {% empty %}-{% endfor %}
-              </div>
-            </li>
-          {% empty %}
-            <li class="list-group-item text-muted">Kayıt yok</li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
 
-    <!-- Öğretmenler -->
-    <div class="col-lg-3 col-md-6">
-      <div class="card h-100">
-        <div class="card-header bg-white fw-semibold">👨‍🏫 Öğretmenler</div>
-        <ul class="list-group list-group-flush">
-          {% for t in teachers %}
-            <li class="list-group-item">
-              <div class="fw-semibold">{{ t.full_name|default:t.name }}</div>
-              {% if t.e_mail %}<div class="small text-muted">{{ t.e_mail }}</div>{% endif %}
-            </li>
-          {% empty %}
-            <li class="list-group-item text-muted">Kayıt yok</li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
+    <footer class="text-center text-muted mt-5 mb-3 small">
+        © 2025 Popeyes SIS — Dekan Yönetim Sistemi
+    </footer>
 
-    <!-- Öğrenciler -->
-    <div class="col-lg-3 col-md-6">
-      <div class="card h-100">
-        <div class="card-header bg-white fw-semibold">🎓 Öğrenciler</div>
-        <ul class="list-group list-group-flush">
-          {% for s in students %}
-            <li class="list-group-item">
-              <div class="fw-semibold">{{ s.student_no }} — {{ s.full_name|default:s.name }}</div>
-              <div class="small text-muted">
-                Bölüm(ler):
-                {% for d in s.departments.all %}
-                  {{ d.code }}{% if not forloop.last %}, {% endif %}
-                {% empty %}-{% endfor %}
-              </div>
-            </li>
-          {% empty %}
-            <li class="list-group-item text-muted">Kayıt yok</li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-
-  </div>
-
-  <footer class="text-center text-muted mt-5 mb-3 small">
-    © 2025 Popeyes SIS — Dekan Yönetim Sistemi
-  </footer>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

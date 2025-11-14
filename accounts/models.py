@@ -10,7 +10,7 @@ class SimpleUser(models.Model):
     username = models.CharField(max_length=150, unique=True)
     password = models.CharField(max_length=128)  # basitlik için düz metin (demo!)
     role     = models.CharField(max_length=20, choices=Roles.choices)
-
+    email = models.EmailField(unique=True, blank=True, null=True)
     def get_full_name(self):
         return f"{self.username}"
 

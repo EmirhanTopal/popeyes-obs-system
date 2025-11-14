@@ -1,7 +1,4 @@
 from django.contrib import admin
-
-# Register your models here.
-from django.contrib import admin
 from .models import Teacher, TeacherSchedule, OfficeHour
 
 
@@ -38,7 +35,7 @@ class TeacherAdmin(admin.ModelAdmin):
         "teacher_type",
         "employee_id",
         "is_active",
-        "created_at"
+        "created_at",
     )
 
     list_filter = (
@@ -49,13 +46,16 @@ class TeacherAdmin(admin.ModelAdmin):
     )
 
     search_fields = (
+        "user__username",
         "user__first_name",
         "user__last_name",
         "employee_id",
         "department__name",
     )
 
-    ordering = ("department", "user__last_name")
+    # ❗ SimpleUser'da last_name alanı yok→ ordering user__username yapılmalı
+    ordering = ("department", "user__username")
+
     readonly_fields = ("created_at", "updated_at")
 
     fieldsets = (
@@ -73,9 +73,9 @@ class TeacherAdmin(admin.ModelAdmin):
         }),
     )
 
-    # Related models inline gösterilecek
     inlines = [TeacherScheduleInline, OfficeHourInline]
 
+    # user ve department alanları admin aramasında hızlı bulunsun
     autocomplete_fields = ("user", "department")
 
 
@@ -95,7 +95,7 @@ class TeacherScheduleAdmin(admin.ModelAdmin):
     )
 
     list_filter = ("day_of_week", "teacher__department")
-    search_fields = ("teacher__user__first_name", "teacher__user__last_name", "location")
+    search_fields = ("teacher__user__username",)
     ordering = ("day_of_week", "start_time")
 
     autocomplete_fields = ("teacher",)
@@ -109,7 +109,7 @@ class TeacherScheduleAdmin(admin.ModelAdmin):
 class OfficeHourAdmin(admin.ModelAdmin):
     list_display = ("teacher", "day_of_week", "start_time", "end_time", "is_active")
     list_filter = ("day_of_week", "is_active", "teacher__department")
-    search_fields = ("teacher__user__first_name", "teacher__user__last_name")
+    search_fields = ("teacher__user__username",)
     ordering = ("day_of_week", "start_time")
 
     autocomplete_fields = ("teacher",)

@@ -6,6 +6,7 @@ from django.utils import timezone
 from .models import Teacher, TeacherSchedule, OfficeHour
 from .forms import TeacherProfileForm, TeacherScheduleForm, OfficeHourForm,TeacherContactInfoForm
 from courses.models import Course
+from django.utils import timezone
 
 @login_required
 def teacher_dashboard(request):

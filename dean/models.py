@@ -13,8 +13,6 @@ class Dean(models.Model):
     def __str__(self):
         return f"{self.full_name} ({self.faculty.full_name})"
 
-
-
 class DepartmentHeadApproval(models.Model):
     department = models.ForeignKey('departments.Department', on_delete=models.CASCADE)
     new_head = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE)

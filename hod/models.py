@@ -7,12 +7,6 @@ from django.contrib.auth import get_user_model
 from teachers.models import Teacher
 
 class Head(models.Model):
-    """
-    Bölüm Başkanı modeli.
-    User'dan tamamen bağımsız yönetilebilen,
-    Department ile birebir ilişkilendirilmiş resmi Head yapısı.
-    """
-
     head_user = models.OneToOneField(SimpleUser, on_delete=models.CASCADE, related_name="head_profile")
     department = models.OneToOneField(Department, on_delete=models.CASCADE, related_name="head")
     teacher_profile = models.OneToOneField(
@@ -69,28 +63,6 @@ class TeacherCourseAssignment(models.Model):
     def __str__(self):
         return f"{self.course.code} → {self.teacher.user.get_full_name()}"
 
-
-# ----------------------------------------------------
-# 📊 2) Bölüm Genel İstatistikleri
-# ----------------------------------------------------
-class DepartmentStatistic(models.Model):
-    """
-    Dashboard için bölüm istatistikleri.
-    """
-    department = models.OneToOneField(Department, on_delete=models.CASCADE)
-    total_students = models.PositiveIntegerField(default=0)
-    total_teachers = models.PositiveIntegerField(default=0)
-    total_courses = models.PositiveIntegerField(default=0)
-    success_rate = models.FloatField(default=0.0)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.department.name} Statistics"
-
-
-# ----------------------------------------------------
-# 📚 3) Ders Bazlı İstatistikler
-# ----------------------------------------------------
 class CourseStatistic(models.Model):
     """
     Dersin kendi akademik istatistiği.

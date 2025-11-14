@@ -23,7 +23,6 @@ class Course(models.Model):
 
     code = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=100)
-    department = models.ManyToManyField(Department, related_name="courses", blank=True)
     level = models.ForeignKey(Level, on_delete=models.CASCADE, related_name="courses")
     credit = models.FloatField(null=True, blank=True)
     ects = models.FloatField(null=True, blank=True, verbose_name="AKTS")
@@ -32,8 +31,12 @@ class Course(models.Model):
         choices=COURSE_TYPE_CHOICES,
         verbose_name="Ders Türü"
     )
-
+    midterm_weight = models.PositiveSmallIntegerField(default=0, verbose_name="Vize (%)")
+    final_weight = models.PositiveSmallIntegerField(default=0, verbose_name="Final (%)")
+    assignment_weight = models.PositiveSmallIntegerField(default=0, verbose_name="Ödev (%)")
+    attendance_weight = models.PositiveSmallIntegerField(default=0, verbose_name="Devam (%)")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
+    semester = models.PositiveSmallIntegerField(default=1, verbose_name="Dönem")
 
     # Head hangi bölüm için oluşturmuş?
     created_by_head = models.ForeignKey(
@@ -52,14 +55,36 @@ class Course(models.Model):
         return f"{self.code} - {self.name} ({self.get_course_type_display()})"
 
     def clean(self):
-        # Kendini önkoşul olarak eklemeyi engelle
+        super().clean()
+
+        total = (
+                (self.midterm_weight or 0)
+                + (self.final_weight or 0)
+                + (self.assignment_weight or 0)
+                + (self.attendance_weight or 0)
+        )
+
+        if total != 100:
+            raise ValidationError("Vize + Final + Ödev + Devam toplamı 100 olmalıdır.")
+
+        # Kendini önkoşul yapmayı engelle
         if self.pk and self.prerequisites.filter(pk=self.pk).exists():
             raise ValidationError(_("Bir ders kendisini önkoşul olarak içeremez."))
 
 
 
 
-    
+class CourseAssessmentComponent(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="components")
+    name = models.CharField(max_length=100)  # "Vize 1", "Quiz", "Ödev 2"...
+    weight = models.PositiveSmallIntegerField()  # % değeri
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.course.code} - {self.name} (%{self.weight})"
+
 
 class CourseOffering(models.Model):
     """

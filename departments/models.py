@@ -16,11 +16,17 @@ class Department(models.Model):
         return f"{self.code} - {self.name}"
 
 class DepartmentCourse(models.Model):
+    APPROVAL_CHOICES = [
+        ("PENDING", "Onay Bekliyor"),
+        ("APPROVED", "Onaylandı"),
+        ("REJECTED", "Reddedildi"),
+    ]
+
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name="department_courses")
     course = models.ForeignKey('courses.Course', on_delete=models.CASCADE, related_name="course_departments")
     semester = models.PositiveIntegerField(default=1)
     is_mandatory = models.BooleanField(default=True)
-
+    approval_status = models.CharField(max_length=20, choices=APPROVAL_CHOICES,default="PENDING")
     def __str__(self):
         return f"{self.department.name} - {self.course}"
 

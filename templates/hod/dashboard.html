@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Bölüm Başkanı Paneli</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
@@ -48,64 +49,108 @@
 
     <!-- Stats -->
     <div class="row mb-4 g-3">
-        <div class="col-md-3"><div class="stat-card">
-            <div class="stat-value">{{ stats.total_students }}</div>
-            <div class="stat-label">Öğrenci Sayısı</div>
-        </div></div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.student_count }}</div>
+                <div class="stat-label">Öğrenci Sayısı</div>
+            </div>
+        </div>
 
-        <div class="col-md-3"><div class="stat-card">
-            <div class="stat-value">{{ stats.total_teachers }}</div>
-            <div class="stat-label">Öğretmen Sayısı</div>
-        </div></div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.teacher_count }}</div>
+                <div class="stat-label">Öğretmen Sayısı</div>
+            </div>
+        </div>
 
-        <div class="col-md-3"><div class="stat-card">
-            <div class="stat-value">{{ stats.total_courses }}</div>
-            <div class="stat-label">Ders Sayısı</div>
-        </div></div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ dept_courses|length }}</div>
+                <div class="stat-label">Ders Sayısı</div>
+            </div>
+        </div>
 
-        <div class="col-md-3"><div class="stat-card">
-            <div class="stat-value">{{ stats.success_rate }}%</div>
-            <div class="stat-label">Başarı Oranı</div>
-        </div></div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.success_rate }}%</div>
+                <div class="stat-label">Başarı Oranı</div>
+            </div>
+        </div>
     </div>
+
 
     <div class="row g-4">
 
-        <!-- Add Course -->
+        <!-- LEFT SIDE -->
         <div class="col-md-4">
             <div class="card shadow-sm">
-                <div class="card-header">📘 Bölüme Ders Ekle</div>
+                <div class="card-header fw-semibold">📘 Bölüm Ders İşlemleri</div>
+
                 <div class="card-body">
 
-                    <a href="{% url 'hod:create_course' %}" class="btn btn-primary w-100">
-    Yeni Ders Oluştur
-</a>
+                    <!-- NEW COURSE BUTTON -->
+                    <a href="{% url 'hod:create_course' %}" class="btn btn-primary w-100 mb-3">
+                        Yeni Ders Oluştur
+                    </a>
 
+                    <!-- ADD EXISTING COURSE BUTTON -->
+                    <a href="{% url 'hod:add_existing_course' %}" class="btn btn-outline-primary w-100">
+                        Bölüme Ders Ekle
+                    </a>
 
                 </div>
             </div>
         </div>
 
-        <!-- Course List -->
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header">📚 Bölüm Ders Listesi</div>
-                {% if pending_courses %}
-<div class="card mt-4 shadow-sm">
-    <div class="card-header">⏳ Onay Bekleyen Dersler</div>
 
-    <ul class="list-group list-group-flush">
-        {% for c in pending_courses %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-                <b>{{ c.code }}</b> — {{ c.name }}
+        <!-- RIGHT SIDE -->
+        <div class="col-md-8">
+
+            <!-- ONAY BEKLEYEN DERSLER (HOD'un oluşturduğu) -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning fw-semibold">
+                    ⏳ Oluşturduğunuz Yeni Dersler (Dekan Onayı Bekliyor)
+                </div>
+
+                <ul class="list-group list-group-flush">
+                    {% for c in pending_courses %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div><b>{{ c.code }}</b> — {{ c.name }}</div>
+                        <span class="badge bg-warning text-dark">Onay Bekliyor</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted text-center py-2">
+                        Bekleyen ders yok.
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
-            <span class="badge bg-warning">Onay Bekliyor</span>
-        </li>
-        {% endfor %}
-    </ul>
-</div>
-{% endif %}
+
+
+            <!-- ONAY BEKLEYEN BÖLÜM DERS TALEPLERİ -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info fw-semibold">
+                    📝 Bölüme Eklenmesini İstediğiniz Dersler (Onay Bekliyor)
+                </div>
+
+                <ul class="list-group list-group-flush">
+                    {% for dc in pending_department_courses %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div><b>{{ dc.course.code }}</b> — {{ dc.course.name }}</div>
+                        <span class="badge bg-info text-dark">Onay Bekliyor</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted text-center py-2">
+                        Bekleyen talep yok.
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+
+            <!-- BÖLÜM DERS LİSTESİ -->
+            <div class="card shadow-sm">
+                <div class="card-header">📚 Onaylanmış Bölüm Dersleri</div>
 
                 <div class="card-body p-0">
                     <table class="table table-striped mb-0">
@@ -117,72 +162,88 @@
                                 <th>AKTS</th>
                                 <th>Tür</th>
                                 <th>Dönem</th>
-                                <th></th>
+                                <th class="text-end">İşlemler</th>
                             </tr>
                         </thead>
 
                         <tbody>
                         {% for dc in dept_courses %}
+                            {% if dc.approval_status == "APPROVED" %}
                             <tr>
                                 <td>{{ dc.course.code }}</td>
                                 <td>{{ dc.course.name }}</td>
                                 <td>{{ dc.course.credit }}</td>
-                                <td>{{ dc.course.akts }}</td>
+                                <td>{{ dc.course.ects }}</td>
                                 <td>{{ dc.course.get_course_type_display }}</td>
                                 <td>{{ dc.semester }}</td>
-                                <td>
-                                    <a href="{% url 'hod:delete_course' dc.id %}" class="btn btn-sm btn-danger">Sil</a>
+                                <td class="text-end">
+                                    <a href="{% url 'hod:course_detail' dc.id %}"
+                                       class="btn btn-sm btn-outline-primary me-1">Detay</a>
+
+                                    <a href="{% url 'hod:course_edit' dc.id %}"
+                                       class="btn btn-sm btn-outline-secondary me-1">✏</a>
+
+                                    <a href="{% url 'hod:delete_course' dc.id %}"
+                                       class="btn btn-sm btn-danger">Sil</a>
                                 </td>
                             </tr>
+                            {% endif %}
                         {% empty %}
                             <tr>
-                                <td colspan="7" class="text-muted text-center py-3">Henüz ders eklenmemiş.</td>
+                                <td colspan="7" class="text-muted text-center py-3">
+                                    Henüz onaylanmış ders yok.
+                                </td>
                             </tr>
                         {% endfor %}
                         </tbody>
                     </table>
                 </div>
-
             </div>
+
+
+            <!-- TEACHERS -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header">🧑‍🏫 Bölümdeki Öğretim Görevlileri</div>
+
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>İsim</th>
+                            <th>Unvan</th>
+                            <th>Tip</th>
+                            <th>Ofis</th>
+                            <th>E-posta</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for t in teachers %}
+                        <tr>
+                            <td>{{ t.full_name }}</td>
+                            <td>{{ t.get_academic_title_display }}</td>
+                            <td>{{ t.get_teacher_type_display }}</td>
+                            <td>{{ t.office_location|default:"-" }}</td>
+                            <td>{{ t.email }}</td>
+                            <td>
+                                <a href="{% url 'hod:teacher_detail' t.id %}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Detay
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-muted text-center py-3">
+                                Bu bölümde öğretim görevlisi bulunmuyor.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
         </div>
-
-    </div>
-
-    <!-- Teacher List -->
-    <div class="card shadow-sm mt-4">
-        <div class="card-header">🧑‍🏫 Bölümdeki Öğretim Görevlileri</div>
-
-        <table class="table mb-0">
-            <thead>
-                <tr>
-                    <th>İsim</th>
-                    <th>Unvan</th>
-                    <th>Tip</th>
-                    <th>Ofis</th>
-                    <th>E-posta</th>
-                    <th></th>
-                </tr>
-            </thead>
-
-            <tbody>
-            {% for t in teachers %}
-                <tr>
-                    <td>{{ t.full_name }}</td>
-                    <td>{{ t.get_academic_title_display }}</td>
-                    <td>{{ t.get_teacher_type_display }}</td>
-                    <td>{{ t.office_location|default:"-" }}</td>
-                    <td>{{ t.email }}</td>
-                    <td>
-                        <a href="{% url 'hod:teacher_detail' t.id %}" class="btn btn-sm btn-outline-primary">Detay</a>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="6" class="text-muted text-center py-3">Bu bölümde öğretim görevlisi bulunmuyor.</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
     </div>
 
 </div>
