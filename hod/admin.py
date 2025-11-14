@@ -1,7 +1,5 @@
-"""from django.contrib import admin
-
-# Register your models here.
 from django.contrib import admin
+from .models import Head
 from .models import (
     TeacherCourseAssignment,
     DepartmentStatistic,
@@ -9,6 +7,47 @@ from .models import (
     TeacherPerformance,
     HeadReportLog
 )
+
+@admin.register(Head)
+class HeadAdmin(admin.ModelAdmin):
+    list_display = (
+        "full_name",
+        "department",
+        "teacher_profile",
+        "is_active",
+        "start_date",
+        "end_date",
+    )
+
+    search_fields = (
+        "user__first_name",
+        "user__last_name",
+        "department__name",
+    )
+
+    list_filter = (
+        "is_active",
+        "department",
+    )
+
+    ordering = ("department",)
+
+    autocomplete_fields = ("user", "department", "teacher_profile")
+
+    fieldsets = (
+        ("Bölüm Başkanı Bilgisi", {
+            "fields": ("user", "department", "teacher_profile")
+        }),
+        ("Görev Bilgileri", {
+            "fields": ("is_active", "start_date", "end_date")
+        }),
+        ("Sistem", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",)
+        }),
+    )
+
+    readonly_fields = ("created_at", "updated_at", "start_date")
 
 @admin.register(TeacherCourseAssignment)
 class TeacherCourseAssignmentAdmin(admin.ModelAdmin):
@@ -85,4 +124,3 @@ class HeadReportLogAdmin(admin.ModelAdmin):
     list_filter = ("report_type", "department")
     search_fields = ("report_type", "department__name", "generated_by__username")
     ordering = ("-created_at",)
-"""

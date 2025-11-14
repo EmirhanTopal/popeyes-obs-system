@@ -8,10 +8,52 @@ from teachers.models import Teacher
 
 User = get_user_model()
 
+class Head(models.Model):
+    """
+    Bölüm Başkanı modeli.
+    User'dan tamamen bağımsız yönetilebilen,
+    Department ile birebir ilişkilendirilmiş resmi Head yapısı.
+    """
 
-# ----------------------------------------------------
-# 📘 1) Ders Atama (Teacher ↔ Course)
-# ----------------------------------------------------
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="head_profile")
+    department = models.OneToOneField(Department, on_delete=models.CASCADE, related_name="head")
+    teacher_profile = models.OneToOneField(
+        Teacher,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="head_role",
+        help_text="Bu kullanıcı aynı zamanda öğretim görevlisiyse atanabilir."
+    )
+
+    start_date = models.DateField(auto_now_add=True)
+    end_date = models.DateField(null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Bölüm Başkanı"
+        verbose_name_plural = "Bölüm Başkanları"
+        ordering = ["department"]
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} — {self.department.name}"
+
+    @property
+    def full_name(self):
+        return self.user.get_full_name()
+
+    @property
+    def email(self):
+        return self.user.email
+
+    @property
+    def active_since(self):
+        return f"{self.start_date} tarihinden beri aktif."
+
 class TeacherCourseAssignment(models.Model):
     """
     Head, öğretmenlere ders atar.
