@@ -18,8 +18,6 @@ urlpatterns = [
     # Ders yönetimi
     path('courses/', views.course_management, name='course_management'),
     path('courses/<int:course_id>/learning-outcomes/', views.manage_learning_outcomes, name='manage_learning_outcomes'),
-    path('learning-outcome/<int:outcome_id>/edit/', views.edit_learning_outcome, name='edit_learning_outcome'),
-    path('learning-outcome/<int:outcome_id>/delete/', views.delete_learning_outcome, name='delete_learning_outcome'),
     path('courses/<int:course_id>/grades/', views.grade_management, name='grade_management'),
     path('courses/<int:course_id>/attendance/', views.attendance_management, name='attendance_management'),
 ]

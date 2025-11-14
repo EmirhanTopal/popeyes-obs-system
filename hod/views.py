@@ -14,18 +14,28 @@ def dashboard(request):
         return redirect("login")
 
     username = request.session.get("username")
-    hod = Head.objects.filter(head_user__username=username, is_active=True).select_related("department").first()
+    hod = Head.objects.filter(
+        head_user__username=username,
+        is_active=True
+    ).select_related("department").first()
+
     if not hod:
         return render(request, "hod/no_department.html")
 
     department = hod.department
-
-    # istatistik
     stats, _ = DepartmentStatistic.objects.get_or_create(department=department)
-    courses = Course.objects.all()
-    dept_courses = DepartmentCourse.objects.filter(department=department).select_related("course")
+
+    dept_courses = DepartmentCourse.objects.filter(
+        department=department
+    ).select_related("course")
+
     teachers = Teacher.objects.filter(department=department)
-    pending_courses = Course.objects.filter(created_by_head=hod, status="PENDING")
+
+    pending_courses = Course.objects.filter(
+        created_by_head=hod,
+        status="PENDING"
+    )
+
     pending_department_courses = DepartmentCourse.objects.filter(
         department=department,
         approval_status="PENDING"
@@ -35,12 +45,12 @@ def dashboard(request):
         "username": username,
         "department": department,
         "stats": stats,
-        "courses": courses,
         "dept_courses": dept_courses,
         "teachers": teachers,
+        "pending_courses": pending_courses,
         "pending_department_courses": pending_department_courses,
-
     })
+
 
 def add_offering(request, course_id):
     course = get_object_or_404(Course, id=course_id)
@@ -55,7 +65,8 @@ def create_course(request):
 
     username = request.session.get("username")
     hod = Head.objects.filter(
-        head_user__username=username, is_active=True
+        head_user__username=username,
+        is_active=True
     ).select_related("department").first()
 
     if not hod:
@@ -71,24 +82,34 @@ def create_course(request):
     if request.method == "POST":
         code = request.POST.get("code", "").strip().upper()
         name = request.POST.get("name", "").strip()
+
         credit = request.POST.get("credit") or None
         ects = request.POST.get("ects") or None
         level_id = request.POST.get("level")
         course_type = request.POST.get("course_type")
-        semester = request.POST.get("semester")
-        midterm = int(request.POST.get("midterm_weight"))
-        final = int(request.POST.get("final_weight"))
-        assignment = int(request.POST.get("assignment_weight"))
-        attendance = int(request.POST.get("attendance_weight"))
+        semester = request.POST.get("semester") or 1
 
-        total = midterm + final + assignment + attendance
-        if total != 100:
-            error = "Vize + Final + Ödev + Devam toplamı 100 olmalıdır."
+        # -----------------------------
+        # DİNAMİK BİLEŞEN TOPLAMI
+        # -----------------------------
+        total_weight = 0
+        for key in request.POST.keys():
+            if key.startswith("component_weight_"):
+                try:
+                    total_weight += int(request.POST[key])
+                except:
+                    pass
+
+        if total_weight != 100:
+            error = f"Değerlendirme bileşenlerinin toplamı 100 olmalıdır. (Şu an {total_weight})"
 
         if Course.objects.filter(code=code).exists():
             error = "Bu kodla kayıtlı bir ders zaten var."
 
         if not error:
+            # -----------------------------
+            # DERS OLUŞTUR
+            # -----------------------------
             course = Course.objects.create(
                 code=code,
                 name=name,
@@ -99,19 +120,45 @@ def create_course(request):
                 status="PENDING",
                 created_by_head=hod,
                 semester=semester,
-                midterm_weight=midterm,
-                final_weight=final,
-                assignment_weight=assignment,
-                attendance_weight=attendance,
+                midterm_weight=0,
+                final_weight=0,
+                assignment_weight=0,
+                attendance_weight=0,
             )
 
-            # Önkoşulları ekle
+            # Önkoşullar
             prereq_ids = request.POST.getlist("prerequisites")
             course.prerequisites.set(prereq_ids)
 
-            # Öğretmen atamaları
+            # -----------------------------
+            # BİLEŞENLERİ KAYDET
+            # -----------------------------
+            counter = 1
+            while True:
+                name_key = f"component_name_{counter}"
+                weight_key = f"component_weight_{counter}"
+
+                if name_key not in request.POST:
+                    break
+
+                comp_name = request.POST.get(name_key)
+                comp_weight = int(request.POST.get(weight_key) or 0)
+
+                CourseAssessmentComponent.objects.create(
+                    course=course,
+                    name=comp_name,
+                    weight=comp_weight
+                )
+
+                counter += 1
+
+            # -----------------------------
+            # ÖĞRETMEN ATAMALARI
+            # -----------------------------
             teacher_ids = request.POST.getlist("teachers")
+
             for t_id in teacher_ids:
+                # Kayıt tablosu
                 TeacherCourseAssignment.objects.create(
                     teacher_id=t_id,
                     course=course,
@@ -120,6 +167,10 @@ def create_course(request):
                     is_active=True
                 )
 
+                # M2M bağlantı
+                course.teachers.add(t_id)
+
+            messages.success(request, "Ders başarıyla oluşturuldu ve onaya gönderildi.")
             return redirect("hod:dashboard")
 
     return render(request, "hod/create_course.html", {
@@ -129,6 +180,7 @@ def create_course(request):
         "all_courses": all_courses,
         "error": error,
     })
+
 
 
 
@@ -178,26 +230,21 @@ def course_edit(request, pk):
         head_user__username=username,
         is_active=True
     ).select_related("department").first()
-    if not hod:
-        return redirect("hod:dashboard")
 
     dept_course = get_object_or_404(
         DepartmentCourse.objects.select_related("course", "department"),
         pk=pk,
         department=hod.department,
     )
+
     course = dept_course.course
     teachers = Teacher.objects.filter(department=hod.department)
-
-    # Yeni: level list ve pre-req listeleri
     level_list = Level.objects.all()
     all_courses = Course.objects.exclude(id=course.id)
     current_prereq_ids = list(course.prerequisites.values_list("id", flat=True))
 
-    # mevcut atamalar
     selected_teacher_ids = list(
-        TeacherCourseAssignment.objects.filter(course=course, is_active=True)
-        .values_list("teacher_id", flat=True)
+        course.teachers.values_list("id", flat=True)
     )
 
     error = None
@@ -207,24 +254,25 @@ def course_edit(request, pk):
         course.credit = request.POST.get("credit") or None
         course.ects = request.POST.get("ects") or None
         course.course_type = request.POST.get("course_type")
-        level_id = request.POST.get("level")
 
+        level_id = request.POST.get("level")
         if level_id:
             course.level_id = level_id
 
-        # Önkoşullar
         prereq_ids = request.POST.getlist("prerequisites")
         course.prerequisites.set(prereq_ids)
 
         course.save()
 
-        # bölüm dersi ayarları
         dept_course.semester = request.POST.get("semester") or 1
-        dept_course.is_mandatory = bool(request.POST.get("is_mandatory"))
         dept_course.save()
 
-        # öğretmen atamasını güncelle
+        # -----------------------------
+        # ÖĞRETMEN GÜNCELLEME
+        # -----------------------------
         new_ids = set(map(int, request.POST.getlist("teachers")))
+
+        # 1) Assignment tablosu güncelle
         TeacherCourseAssignment.objects.filter(course=course).exclude(
             teacher_id__in=new_ids
         ).delete()
@@ -240,6 +288,9 @@ def course_edit(request, pk):
                 }
             )
 
+        # 2) M2M güncelle
+        course.teachers.set(new_ids)
+
         return redirect("hod:course_detail", course_id=dept_course.id)
 
     return render(request, "hod/course_edit.html", {
@@ -253,7 +304,6 @@ def course_edit(request, pk):
         "current_prereq_ids": current_prereq_ids,
         "error": error,
     })
-
 
 def delete_course(request, pk):
     username = request.session.get("username")
