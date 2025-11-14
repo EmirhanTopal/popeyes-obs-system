@@ -1,6 +1,196 @@
-{% extends "base.html" %}
-{% block title %}Öğretmen Paneli{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
 {% block content %}
-  <h3>Öğretmen Paneli</h3>
-  <p>Hoş geldin {{ request.session.username }}</p>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Öğretmen Dashboard</h2>
+                <div>
+                    <span class="badge bg-primary">{{ teacher.get_academic_title_display }}</span>
+                    <span class="badge bg-secondary">{{ teacher.department.name }}</span>
+                </div>
+            </div>
+            
+            <!-- İstatistik Kartları -->
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Aktif Dersler
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        {{ active_courses.count }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-book fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Toplam Öğrenci
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        {{ total_students }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-users fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Ofis Saatleri
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        {{ active_office_hours.count }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Uzmanlık Alanı
+                                    </div>
+                                    <div class="h6 mb-0 font-weight-bold text-gray-800 text-truncate">
+                                        {{ teacher.expertise_area|default:"Belirtilmemiş"|truncatewords:3 }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-graduation-cap fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hızlı Erişim Butonları -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Hızlı Erişim</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-2">
+                                    <a href="{% url 'teachers:course_management' %}" class="btn btn-primary btn-block">
+                                        <i class="fas fa-book"></i> Derslerim
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <a href="{% url 'teachers:manage_schedule' %}" class="btn btn-success btn-block">
+                                        <i class="fas fa-calendar"></i> Programım
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <a href="{% url 'teachers:manage_office_hours' %}" class="btn btn-info btn-block">
+                                        <i class="fas fa-clock"></i> Ofis Saatleri
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-2">
+                                    <a href="{% url 'teachers:profile' %}" class="btn btn-warning btn-block">
+                                        <i class="fas fa-user"></i> Profilim
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yaklaşan Etkinlikler ve Aktif Dersler -->
+            <div class="row">
+                <!-- Yaklaşan Etkinlikler -->
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Yaklaşan Etkinlikler</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if upcoming_schedules %}
+                                {% for schedule in upcoming_schedules %}
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                                    <div>
+                                        <h6 class="mb-0">{{ schedule.get_day_of_week_display }}</h6>
+                                        <small class="text-muted">{{ schedule.start_time }} - {{ schedule.end_time }}</small>
+                                        <br>
+                                        <small class="text-info">{{ schedule.location }}</small>
+                                    </div>
+                                    <span class="badge bg-secondary">{{ schedule.activity_type }}</span>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">Yaklaşan etkinlik bulunmamaktadır.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aktif Dersler -->
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Aktif Derslerim</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if active_courses %}
+                                {% for course in active_courses %}
+                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                                    <div>
+                                        <h6 class="mb-0">{{ course.course_code }}</h6>
+                                        <small class="text-muted">{{ course.course_name }}</small>
+                                        <br>
+                                        <small>Kredi: {{ course.credit }} | AKTS: {{ course.ects }}</small>
+                                    </div>
+                                    <div>
+                                        <a href="{% url 'teachers:manage_learning_outcomes' course.id %}" 
+                                           class="btn btn-sm btn-outline-primary">Çıktılar</a>
+                                        <a href="{% url 'teachers:grade_management' course.id %}" 
+                                           class="btn btn-sm btn-outline-success">Notlar</a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">Aktif ders bulunmamaktadır.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
