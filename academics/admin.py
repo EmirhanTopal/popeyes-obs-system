@@ -13,8 +13,7 @@ from courses.models import Course
 
 @admin.register(Level)
 class LevelAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name')
-    search_fields = ('code', 'name')
+    list_display = ("number", "name")
 
 
 

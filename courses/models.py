@@ -3,19 +3,9 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from departments.models import Department
-from academics.models import Level  # senin sisteminde ayrı app'ten geldiği için
+from academics.models import Level
 
 User = get_user_model()
-
-
-# Fakülte modeli opsiyonel, Departments içinde olabilir ama ileride gerekirse kullanılabilir
-class Faculty(models.Model):
-    name = models.CharField(max_length=200, unique=True)
-    code = models.CharField(max_length=20, blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
 
 class Course(models.Model):
     COURSE_TYPE_CHOICES = [
