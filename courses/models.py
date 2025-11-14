@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from departments.models import Department
 from academics.models import Level
+from teachers.models import Teacher
 
 User = get_user_model()
 
@@ -43,19 +44,9 @@ class Course(models.Model):
             raise ValidationError(_("Bir ders kendisini önkoşul olarak içeremez."))
 
 
-class Teacher(models.Model):
-    TEACHER_TYPE_CHOICES = [
-        ("FACULTY", "Fakülte Hocası"),
-        ("DEPARTMENT", "Bölüm Hocası"),
-    ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="teacher_profile")
-    title = models.CharField(max_length=120, blank=True)
-    teacher_type = models.CharField(max_length=20, choices=TEACHER_TYPE_CHOICES, default="DEPARTMENT")
-    departments = models.ManyToManyField(Department, blank=True, related_name="course_teachers")
 
-    def __str__(self):
-        return f"{self.title + ' ' if self.title else ''}{self.user.get_full_name() or self.user.username}"
+    
 
 class CourseOffering(models.Model):
     """
