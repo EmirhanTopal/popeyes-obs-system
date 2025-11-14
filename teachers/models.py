@@ -1,13 +1,6 @@
 from django.db import models
-from django.contrib.auth import get_user_model
 from departments.models import Department
 from accounts.models import SimpleUser
-
-
-from django.db import models
-from accounts.models import SimpleUser
-from departments.models import Department
-
 
 class Teacher(models.Model):
     TEACHER_TYPES = [

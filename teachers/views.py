@@ -8,42 +8,36 @@ from .forms import TeacherProfileForm, TeacherScheduleForm, OfficeHourForm,Teach
 from courses.models import Course
 from django.utils import timezone
 
-@login_required
 def teacher_dashboard(request):
-    """Öğretmen ana dashboard'ı"""
-    try:
-        teacher = Teacher.objects.get(user=request.user)
-        
-        # İstatistikler
-        active_courses = teacher.courses.filter(is_active=True)
-        # total_students = CourseEnrollment.objects.filter(
-        #     course__in=active_courses,
-        #     is_active=True
-        # ).count()
-        
-        # Yaklaşan etkinlikler
-        upcoming_schedules = TeacherSchedule.objects.filter(
-            teacher=teacher
-        ).order_by('day_of_week', 'start_time')[:5]
-        
-        # Aktif ofis saatleri
-        active_office_hours = teacher.office_hours.filter(is_active=True)
-        
-        context = {
-            'teacher': teacher,
-            'active_courses': active_courses,
-            'total_students': total_students,
-            'upcoming_schedules': upcoming_schedules,
-            'active_office_hours': active_office_hours,
-        }
-        return render(request, 'teachers/dashboard.html', context)
-    except Teacher.DoesNotExist:
-        messages.error(request, "Öğretmen profiliniz bulunamadı.")
-        return redirect('home')
 
-@login_required
+    # SIMPLEUSER kontrolü
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
+
+    username = request.session.get("username")
+    teacher = Teacher.objects.filter(user__username=username).first()
+
+    if not teacher:
+        messages.error(request, "Öğretmen profiliniz bulunamadı.")
+        return redirect("login")
+
+    active_courses = teacher.courses.filter(is_active=True)
+    upcoming_schedules = teacher.schedules.all().order_by('day_of_week', 'start_time')[:5]
+    active_office_hours = teacher.office_hours.filter(is_active=True)
+
+    context = {
+        'teacher': teacher,
+        'active_courses': active_courses,
+        'total_students': 0,
+        'upcoming_schedules': upcoming_schedules,
+        'active_office_hours': active_office_hours,
+    }
+
+    return render(request, 'teachers/dashboard.html', context)
+
 def teacher_profile(request):
-    """Öğretmen profil yönetimi"""
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
     try:
         teacher = Teacher.objects.get(user=request.user)
         
@@ -65,9 +59,9 @@ def teacher_profile(request):
         messages.error(request, "Öğretmen profiliniz bulunamadı.")
         return redirect('home')
 
-@login_required
 def update_contact_info(request):
-    """Sadece iletişim bilgilerini güncelleme"""
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
     try:
         teacher = Teacher.objects.get(user=request.user)
         
@@ -89,9 +83,9 @@ def update_contact_info(request):
         messages.error(request, "Öğretmen profiliniz bulunamadı.")
         return redirect('home')
 
-@login_required
 def manage_schedule(request):
-    """Program yönetimi"""
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
     try:
         teacher = Teacher.objects.get(user=request.user)
         schedules = teacher.schedules.all()
@@ -117,9 +111,9 @@ def manage_schedule(request):
         messages.error(request, "Öğretmen profiliniz bulunamadı.")
         return redirect('home')
 
-@login_required
 def manage_office_hours(request):
-    """Ofis saatleri yönetimi"""
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
     try:
         teacher = Teacher.objects.get(user=request.user)
         office_hours = teacher.office_hours.all()
@@ -145,9 +139,9 @@ def manage_office_hours(request):
         messages.error(request, "Öğretmen profiliniz bulunamadı.")
         return redirect('home')
 
-@login_required
 def course_management(request):
-    """Ders yönetimi ana sayfası"""
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
     try:
         teacher = Teacher.objects.get(user=request.user)
         courses = teacher.courses.filter(is_active=True)
@@ -161,9 +155,9 @@ def course_management(request):
         messages.error(request, "Öğretmen profiliniz bulunamadı.")
         return redirect('home')
 
-@login_required
 def manage_learning_outcomes(request, course_id):
-    """Learning outcome yönetimi"""
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
     try:
         teacher = Teacher.objects.get(user=request.user)
         course = get_object_or_404(Course, id=course_id, teachers=teacher, is_active=True)
@@ -193,9 +187,10 @@ def manage_learning_outcomes(request, course_id):
         messages.error(request, "Öğretmen profiliniz bulunamadı.")
         return redirect('home')
 
-@login_required
+
 def edit_learning_outcome(request, outcome_id):
-    """Learning outcome düzenleme"""
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
     try:
         teacher = Teacher.objects.get(user=request.user)
         learning_outcome = get_object_or_404(
@@ -223,9 +218,9 @@ def edit_learning_outcome(request, outcome_id):
         messages.error(request, "Öğretmen profiliniz bulunamadı.")
         return redirect('home')
 
-@login_required
 def delete_learning_outcome(request, outcome_id):
-    """Learning outcome silme"""
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
     try:
         teacher = Teacher.objects.get(user=request.user)
         learning_outcome = get_object_or_404(
@@ -242,9 +237,9 @@ def delete_learning_outcome(request, outcome_id):
         messages.error(request, "Öğretmen profiliniz bulunamadı.")
         return redirect('home')
 
-@login_required
 def grade_management(request, course_id):
-    """Not yönetimi"""
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
     try:
         teacher = Teacher.objects.get(user=request.user)
         course = get_object_or_404(Course, id=course_id, teachers=teacher, is_active=True)
@@ -260,9 +255,9 @@ def grade_management(request, course_id):
         messages.error(request, "Öğretmen profiliniz bulunamadı.")
         return redirect('home')
 
-@login_required
 def attendance_management(request, course_id):
-    """Devamsızlık yönetimi"""
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
     try:
         teacher = Teacher.objects.get(user=request.user)
         course = get_object_or_404(Course, id=course_id, teachers=teacher, is_active=True)

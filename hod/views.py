@@ -7,6 +7,7 @@ from courses.models import Course, CourseOffering
 from academics.models import Level
 from django.contrib import messages
 from .models import TeacherCourseAssignment, TeacherPerformance
+from django.utils import timezone
 
 def dashboard(request):
     if request.session.get("role") != "HOD":
@@ -132,35 +133,39 @@ def create_course(request):
 
 
 def course_detail(request, course_id):
+    # 1) DepartmentCourse kaydını ve Course'u çek
     dept_course = get_object_or_404(
         DepartmentCourse.objects.select_related("course", "department"),
         pk=course_id
     )
     course = dept_course.course
 
+    # 2) Açılmış şubeler
     offerings = CourseOffering.objects.filter(course=course)
+
+    # 3) Önkoşul dersler (sadece listelemek için)
     all_courses = Course.objects.exclude(id=course.id)
     current_prereq_ids = list(course.prerequisites.values_list("id", flat=True))
 
-    if request.method == "POST":
-        course.name = request.POST.get("name")
-        course.credit = request.POST.get("credit") or None
-        course.ects = request.POST.get("ects") or None
-        course.course_type = request.POST.get("course_type")
+    # 4) Bu derse atanmış öğretim görevlileri
+    assigned_teachers = (
+        TeacherCourseAssignment.objects
+        .filter(course=course, is_active=True)
+        .select_related("teacher", "teacher__user")
+        .order_by("semester", "teacher__academic_title")
+    )
 
-        prereq_ids = request.POST.getlist("prerequisites")
-        course.prerequisites.set(prereq_ids)
-
-        course.save()
-        return redirect("hod:course_detail", course_id=dept_course.id)
-
-    return render(request, "hod/course_detail.html", {
+    # ❗ Bu sayfa sadece GÖRÜNTÜLEME, burada POST ile kayıt yok
+    context = {
         "dept_course": dept_course,
         "course": course,
         "offerings": offerings,
         "all_courses": all_courses,
         "current_prereq_ids": current_prereq_ids,
-    })
+        "assigned_teachers": assigned_teachers,
+    }
+    return render(request, "hod/course_detail.html", context)
+
 
 
 
@@ -169,7 +174,10 @@ def course_edit(request, pk):
         return redirect("login")
 
     username = request.session.get("username")
-    hod = Head.objects.filter(head_user__username=username, is_active=True).select_related("department").first()
+    hod = Head.objects.filter(
+        head_user__username=username,
+        is_active=True
+    ).select_related("department").first()
     if not hod:
         return redirect("hod:dashboard")
 
@@ -181,28 +189,46 @@ def course_edit(request, pk):
     course = dept_course.course
     teachers = Teacher.objects.filter(department=hod.department)
 
+    # Yeni: level list ve pre-req listeleri
+    level_list = Level.objects.all()
+    all_courses = Course.objects.exclude(id=course.id)
+    current_prereq_ids = list(course.prerequisites.values_list("id", flat=True))
+
     # mevcut atamalar
     selected_teacher_ids = list(
         TeacherCourseAssignment.objects.filter(course=course, is_active=True)
         .values_list("teacher_id", flat=True)
     )
 
+    error = None
+
     if request.method == "POST":
         course.name = request.POST.get("name", "").strip()
         course.credit = request.POST.get("credit") or None
         course.ects = request.POST.get("ects") or None
         course.course_type = request.POST.get("course_type")
+        level_id = request.POST.get("level")
+
+        if level_id:
+            course.level_id = level_id
+
+        # Önkoşullar
+        prereq_ids = request.POST.getlist("prerequisites")
+        course.prerequisites.set(prereq_ids)
+
         course.save()
 
+        # bölüm dersi ayarları
         dept_course.semester = request.POST.get("semester") or 1
         dept_course.is_mandatory = bool(request.POST.get("is_mandatory"))
         dept_course.save()
 
         # öğretmen atamasını güncelle
         new_ids = set(map(int, request.POST.getlist("teachers")))
-        # silinenler
-        TeacherCourseAssignment.objects.filter(course=course).exclude(teacher_id__in=new_ids).delete()
-        # eklenenler
+        TeacherCourseAssignment.objects.filter(course=course).exclude(
+            teacher_id__in=new_ids
+        ).delete()
+
         for t_id in new_ids:
             TeacherCourseAssignment.objects.get_or_create(
                 teacher_id=t_id,
@@ -214,7 +240,7 @@ def course_edit(request, pk):
                 }
             )
 
-        return redirect("hod:course_detail", pk=dept_course.id)
+        return redirect("hod:course_detail", course_id=dept_course.id)
 
     return render(request, "hod/course_edit.html", {
         "department": hod.department,
@@ -222,7 +248,12 @@ def course_edit(request, pk):
         "course": course,
         "teachers": teachers,
         "selected_teacher_ids": selected_teacher_ids,
+        "level_list": level_list,
+        "all_courses": all_courses,
+        "current_prereq_ids": current_prereq_ids,
+        "error": error,
     })
+
 
 def delete_course(request, pk):
     username = request.session.get("username")
