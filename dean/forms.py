@@ -1,55 +1,102 @@
-# dean/forms.py
 from django import forms
 from departments.models import Department
 from courses.models import Course
 from teachers.models import Teacher
 from students.models import Student
+from faculty.models import Faculty
 
 
+# ===========================
+#  Bölüm Ekleme Formu
+# ===========================
 class DepartmentForm(forms.ModelForm):
     class Meta:
         model = Department
         fields = ["code", "name", "faculty"]
-        labels = {"code": "Bölüm Kodu", "name": "Bölüm Adı", "faculty": "Fakülte"}
-        widgets = {
-            "code": forms.TextInput(attrs={"class": "form-control"}),
-            "name": forms.TextInput(attrs={"class": "form-control"}),
-            "faculty": forms.Select(attrs={"class": "form-select"}),
-        }
+
+    # Dean panelinden faculty seçilmesin → view içinde otomatik atanacak
+    faculty = forms.ModelChoiceField(
+        queryset=Faculty.objects.all(),
+        required=False,
+        widget=forms.HiddenInput()
+    )
 
 
+# ===========================
+#  Ders Ekleme Formu
+# ===========================
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        fields = ["code", "name", "credit", "department"]
-        labels = {"code": "Ders Kodu", "name": "Ders Adı", "credit": "Kredi", "department": "Bölüm"}
-        widgets = {
-            "code": forms.TextInput(attrs={"class": "form-control"}),
-            "name": forms.TextInput(attrs={"class": "form-control"}),
-            "credit": forms.NumberInput(attrs={"class": "form-control"}),
-            "department": forms.SelectMultiple(attrs={"class": "form-select", "size": "4"}),
-        }
+        fields = ["code", "name", "credit", "ects", "level", "course_type"]
+
+    # Bölüm eklenmiyor çünkü head oluşturuyor — Dean sadece admin olarak ders ekleyebilir.
 
 
-"""class TeacherForm(forms.ModelForm):
+# ===========================
+#  Öğretmen Ekleme Formu
+# ===========================
+class TeacherForm(forms.ModelForm):
+    # Bunlar MODEL alanı DEĞİL → ekstra form alanları
+    first_name = forms.CharField(label="Ad", max_length=50)
+    last_name = forms.CharField(label="Soyad", max_length=50)
+    email = forms.EmailField(label="E-posta")
+
     class Meta:
         model = Teacher
-        fields = ["name", "e_mail", "department"]
-        labels = {"name": "Ad Soyad", "e_mail": "E-posta", "department": "Bölüm"}
-        widgets = {
-            "name": forms.TextInput(attrs={"class": "form-control"}),
-            "e_mail": forms.EmailInput(attrs={"class": "form-control"}),
-            "department": forms.Select(attrs={"class": "form-select"}),
-        }"""
+        fields = [
+            "employee_id",
+            "department",
+            "teacher_type",
+            "academic_title",
+            "expertise_area",
+            "office_location",
+            "office_phone",
+            "personal_website",
+            "linkedin",
+            "google_scholar",
+            "researchgate",
+            "orcid",
+        ]
 
+    def save(self, commit=True):
+        # User oluştur
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
 
+        user = User.objects.create_user(
+            username=self.cleaned_data["email"],
+            email=self.cleaned_data["email"],
+            first_name=self.cleaned_data["first_name"],
+            last_name=self.cleaned_data["last_name"],
+            password="123456"  # otomatik şifre
+        )
+
+        # Teacher oluştur (ModelForm)
+        teacher = super().save(commit=False)
+        teacher.user = user
+
+        if commit:
+            teacher.save()
+
+        return teacher
+
+# ===========================
+#  Öğrenci Ekleme Formu
+# ===========================
 class StudentForm(forms.ModelForm):
     class Meta:
         model = Student
-        fields = ["student_no", "full_name", "departments"]
-        labels = {"student_no": "Öğrenci No", "full_name": "Ad Soyad", "departments": "Bölüm(ler)"}
-        widgets = {
-            "student_no": forms.TextInput(attrs={"class": "form-control"}),
-            "full_name": forms.TextInput(attrs={"class": "form-control"}),
-            "departments": forms.SelectMultiple(attrs={"class": "form-select", "size": "4"}),
-        }
+        fields = [
+            "student_no",
+            "full_name",
+            "email",
+            "departments",
+        ]
+
+    departments = forms.ModelMultipleChoiceField(
+        queryset=Department.objects.all(),
+        widget=forms.SelectMultiple(attrs={"size": 6}),
+        required=True,
+    )
+

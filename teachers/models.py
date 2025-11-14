@@ -1,8 +1,6 @@
 from django.db import models
-from django.contrib.auth import get_user_model
 from departments.models import Department
-
-User = get_user_model()
+from accounts.models import SimpleUser
 
 class Teacher(models.Model):
     TEACHER_TYPES = [
@@ -10,7 +8,7 @@ class Teacher(models.Model):
         ('DEPARTMENT', 'Bölüm Hocası'),
         ('ELECTIVE', 'Seçmeli Ders Hocası'),
     ]
-    
+
     ACADEMIC_TITLES = [
         ('PROF_DR', 'Prof. Dr.'),
         ('ASSOC_PROF_DR', 'Doç. Dr.'),
@@ -18,48 +16,85 @@ class Teacher(models.Model):
         ('INSTRUCTOR', 'Öğr. Gör.'),
         ('RESEARCH_ASSIST', 'Arş. Gör.'),
     ]
-    
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='teacher_profile')
-    employee_id = models.CharField(max_length=20, unique=True, verbose_name="Sicil No")
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, verbose_name="Bölüm")
-    teacher_type = models.CharField(max_length=20, choices=TEACHER_TYPES, default='DEPARTMENT', verbose_name="Öğretmen Tipi")
-    academic_title = models.CharField(max_length=20, choices=ACADEMIC_TITLES, default='INSTRUCTOR', verbose_name="Akademik Unvan")
-    expertise_area = models.TextField(blank=True, verbose_name="Uzmanlık Alanları")
-    
-    # SADECE OFIS BILGISI ZORUNLU OLSUN, DİĞERLERİ OPSİYONEL
-    office_location = models.CharField(max_length=100, blank=True, verbose_name="Ofis No")
-    office_phone = models.CharField(max_length=15, blank=True, verbose_name="Ofis Telefonu")
-    
-    # İLETİŞİM BİLGİLERİ - HOCANIN KENDİSİ DOLDURACAK
-    personal_website = models.URLField(blank=True, verbose_name="Kişisel Website")
-    linkedin = models.URLField(blank=True, verbose_name="LinkedIn Profili")
-    google_scholar = models.URLField(blank=True, verbose_name="Google Scholar")
-    researchgate = models.URLField(blank=True, verbose_name="ResearchGate")
-    orcid = models.CharField(max_length=20, blank=True, verbose_name="ORCID ID")
-    
-    is_active = models.BooleanField(default=True, verbose_name="Aktif")
+
+    # 🔥 SimpleUser ile ilişki (çok doğru yaptın)
+    user = models.OneToOneField(
+        SimpleUser,
+        on_delete=models.CASCADE,
+        related_name='teacher_profile'
+    )
+
+    employee_id = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name="Sicil No"
+    )
+
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.CASCADE,
+        verbose_name="Bölüm"
+    )
+
+    teacher_type = models.CharField(
+        max_length=20,
+        choices=TEACHER_TYPES,
+        default='DEPARTMENT',
+        verbose_name="Öğretmen Tipi"
+    )
+
+    academic_title = models.CharField(
+        max_length=20,
+        choices=ACADEMIC_TITLES,
+        default='INSTRUCTOR',
+        verbose_name="Akademik Unvan"
+    )
+
+    expertise_area = models.TextField(
+        blank=True,
+        verbose_name="Uzmanlık Alanları"
+    )
+
+    office_location = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Ofis No"
+    )
+    office_phone = models.CharField(
+        max_length=15,
+        blank=True,
+        verbose_name="Ofis Telefonu"
+    )
+
+    personal_website = models.URLField(blank=True)
+    linkedin = models.URLField(blank=True)
+    google_scholar = models.URLField(blank=True)
+    researchgate = models.URLField(blank=True)
+    orcid = models.CharField(max_length=20, blank=True)
+
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Öğretim Görevlisi"
         verbose_name_plural = "Öğretim Görevlileri"
-        ordering = ['academic_title', 'user__last_name']
+        # 🔥 Artık hatasız, güvenli ordering:
+        ordering = ['academic_title', 'id']
 
     def __str__(self):
         return f"{self.get_academic_title_display()} {self.user.get_full_name()}"
-    
+
     @property
     def full_name(self):
         return self.user.get_full_name()
-    
+
     @property
     def email(self):
         return self.user.email
-    
+
     @property
     def has_contact_info(self):
-        """Öğretmen iletişim bilgilerini doldurmuş mu?"""
         return any([
             self.personal_website,
             self.linkedin,
@@ -67,19 +102,7 @@ class Teacher(models.Model):
             self.researchgate,
             self.orcid
         ])
-    
-    @property
-    def active_courses(self):
-        return self.courses.filter(is_active=True)
-    
-    @property
-    def total_students(self):
-        """Öğretmenin tüm derslerindeki toplam öğrenci sayısı"""
-        from courses.models import CourseEnrollment
-        return CourseEnrollment.objects.filter(
-            course__in=self.courses.all(),
-            is_active=True
-        ).count()
+
 
 
 class TeacherSchedule(models.Model):
@@ -92,14 +115,14 @@ class TeacherSchedule(models.Model):
         ('SAT', 'Cumartesi'),
         ('SUN', 'Pazar'),
     ]
-    
+
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='schedules')
     day_of_week = models.CharField(max_length=3, choices=DAYS_OF_WEEK, verbose_name="Gün")
     start_time = models.TimeField(verbose_name="Başlangıç Saati")
     end_time = models.TimeField(verbose_name="Bitiş Saati")
     location = models.CharField(max_length=100, verbose_name="Yer")
-    activity_type = models.CharField(max_length=50, verbose_name="Etkinlik Türü")  # Ders, Ofis Saati, Toplantı vb.
-    
+    activity_type = models.CharField(max_length=50, verbose_name="Etkinlik Türü")
+
     class Meta:
         verbose_name = "Öğretmen Programı"
         verbose_name_plural = "Öğretmen Programları"
@@ -115,7 +138,7 @@ class OfficeHour(models.Model):
     start_time = models.TimeField(verbose_name="Başlangıç Saati")
     end_time = models.TimeField(verbose_name="Bitiş Saati")
     is_active = models.BooleanField(default=True, verbose_name="Aktif")
-    
+
     class Meta:
         verbose_name = "Ofis Saati"
         verbose_name_plural = "Ofis Saatleri"

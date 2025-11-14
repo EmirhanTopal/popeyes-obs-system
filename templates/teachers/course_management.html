@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <title>Derslerim</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <style>
+        body { background: #f4f6f9; }
+        .card { border-radius: 10px; }
+    </style>
+</head>
+
+<body class="py-4">
+
+<div class="container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold">Derslerim</h3>
+        <a href="/logout/" class="btn btn-danger btn-sm">Çıkış</a>
+    </div>
+
+    {% if courses %}
+        <div class="row">
+            {% for course in courses %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+
+                        <h5 class="card-title fw-bold">
+                            {{ course.code }} — {{ course.name }}
+                        </h5>
+
+                        <p class="text-muted mb-1">
+                            <strong>Kredi:</strong> {{ course.credit }}
+                            |
+                            <strong>AKTS:</strong> {{ course.ects }}
+                        </p>
+
+                        <p class="text-muted small mb-3">
+                            <strong>Ders Türü:</strong> {{ course.get_course_type_display }}
+                            <br>
+                            <strong>Dönem:</strong> {{ course.semester }}
+                        </p>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'teachers:manage_learning_outcomes' course.id %}"
+                               class="btn btn-outline-primary btn-sm">Çıktılar</a>
+
+                            <a href="{% url 'teachers:grade_management' course.id %}"
+                               class="btn btn-outline-success btn-sm">Notlar</a>
+
+                            <a href="{% url 'teachers:attendance_management' course.id %}"
+                               class="btn btn-outline-warning btn-sm">Yoklama</a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <div class="alert alert-info">
+            Henüz aktif dersiniz bulunmamaktadır.
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
