@@ -11,5 +11,8 @@ class SimpleUser(models.Model):
     password = models.CharField(max_length=128)  # basitlik için düz metin (demo!)
     role     = models.CharField(max_length=20, choices=Roles.choices)
 
+    def get_full_name(self):
+        return f"{self.username}"
+
     def __str__(self):
         return f"{self.username} ({self.role})"

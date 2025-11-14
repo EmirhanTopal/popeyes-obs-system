@@ -6,8 +6,6 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from teachers.models import Teacher
 
-User = get_user_model()
-
 class Head(models.Model):
     """
     Bölüm Başkanı modeli.
@@ -15,7 +13,7 @@ class Head(models.Model):
     Department ile birebir ilişkilendirilmiş resmi Head yapısı.
     """
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="head_profile")
+    head_user = models.OneToOneField(SimpleUser, on_delete=models.CASCADE, related_name="head_profile")
     department = models.OneToOneField(Department, on_delete=models.CASCADE, related_name="head")
     teacher_profile = models.OneToOneField(
         Teacher,
@@ -40,19 +38,20 @@ class Head(models.Model):
         ordering = ["department"]
 
     def __str__(self):
-        return f"{self.user.get_full_name()} — {self.department.name}"
+        return f"{self.head_user.get_full_name()} — {self.department.name}"
 
     @property
     def full_name(self):
-        return self.user.get_full_name()
+        return self.head_user.get_full_name()
 
     @property
     def email(self):
-        return self.user.email
+        return self.head_user.email
 
     @property
     def active_since(self):
         return f"{self.start_date} tarihinden beri aktif."
+
 
 class TeacherCourseAssignment(models.Model):
     """
@@ -143,7 +142,7 @@ class HeadReportLog(models.Model):
     Head tarafında oluşturulmuş raporların geçmişi.
     """
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    generated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    generated_by = models.ForeignKey(SimpleUser, on_delete=models.SET_NULL, null=True)
     report_type = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 

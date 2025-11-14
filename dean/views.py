@@ -41,21 +41,36 @@ def dashboard(request):
         "departments": departments,
     }
     return render(request, "dean/dashboard.html", context)
-def course_approvals(request):
-    if not _is_logged_dean(request):
-        return redirect("login")
+def pending_courses(request):
+    courses = Course.objects.filter(status="PENDING")
 
-    approvals = CourseApproval.objects.filter(status='PENDING')
-    return render(request, 'dean/course_approvals.html', {'approvals': approvals})
+    return render(request, "dean/pending_courses.html", {
+        "courses": courses
+    })
+
 
 def approve_course(request, pk):
-    if not _is_logged_dean(request):
-        return redirect("login")
+    course = Course.objects.get(pk=pk)
 
-    approval = get_object_or_404(CourseApproval, pk=pk)
-    approval.status = 'APPROVED'
-    approval.save()
-    return redirect('dean:course_approvals')
+    course.status = "APPROVED"
+    course.save()
+
+    # Bölüm dersine eklemek için DepartmentCourse oluşturuyoruz
+    DepartmentCourse.objects.create(
+        department=course.created_by_head.department,
+        course=course,
+        semester=1,
+        is_mandatory=True
+    )
+
+    return redirect("dean:pending_courses")
+
+
+def reject_course(request, pk):
+    course = Course.objects.get(pk=pk)
+    course.status = "REJECTED"
+    course.save()
+    return redirect("dean:pending_courses")
 
 def faculty_settings(request):
     if not _is_logged_dean(request):

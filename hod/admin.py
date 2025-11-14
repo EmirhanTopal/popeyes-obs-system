@@ -20,8 +20,8 @@ class HeadAdmin(admin.ModelAdmin):
     )
 
     search_fields = (
-        "user__first_name",
-        "user__last_name",
+        "head_user__first_name",
+        "head_user__last_name",
         "department__name",
     )
 
@@ -32,11 +32,11 @@ class HeadAdmin(admin.ModelAdmin):
 
     ordering = ("department",)
 
-    autocomplete_fields = ("user", "department", "teacher_profile")
+    autocomplete_fields = ("head_user", "department", "teacher_profile")
 
     fieldsets = (
         ("Bölüm Başkanı Bilgisi", {
-            "fields": ("user", "department", "teacher_profile")
+            "fields": ("head_user", "department", "teacher_profile")
         }),
         ("Görev Bilgileri", {
             "fields": ("is_active", "start_date", "end_date")

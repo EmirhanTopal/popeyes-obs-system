@@ -9,6 +9,12 @@ from teachers.models import Teacher
 User = get_user_model()
 
 class Course(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING", "Onay Bekliyor"),
+        ("APPROVED", "Onaylandı"),
+        ("REJECTED", "Reddedildi"),
+    ]
+
     COURSE_TYPE_CHOICES = [
         ("POOL", "Havuz Dersi"),
         ("FACULTY", "Fakülte Dersi"),
@@ -25,6 +31,13 @@ class Course(models.Model):
         max_length=20,
         choices=COURSE_TYPE_CHOICES,
         verbose_name="Ders Türü"
+    )
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
+
+    # Head hangi bölüm için oluşturmuş?
+    created_by_head = models.ForeignKey(
+        "hod.Head", on_delete=models.SET_NULL, null=True, blank=True
     )
 
     prerequisites = models.ManyToManyField(
