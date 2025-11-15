@@ -2,8 +2,10 @@ from departments.models import Department
 from academics.models import Level
 from django.db import models
 from teachers.models import Teacher
+from accounts.models import SimpleUser
 
 class Student(models.Model):
+    user = models.OneToOneField(SimpleUser, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=100)
     student_no = models.CharField(max_length=10, unique=True)
     email = models.EmailField(unique=True)  # ⭐ YENİ EKLENDİ

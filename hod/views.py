@@ -3,7 +3,7 @@ from accounts.models import SimpleUser
 from departments.models import DepartmentCourse, DepartmentStatistic
 from teachers.models import Teacher,TeacherSchedule
 from hod.models import Head
-from courses.models import Course, CourseOffering
+from courses.models import Course, CourseOffering, CourseAssessmentComponent
 from academics.models import Level
 from django.contrib import messages
 from .models import TeacherCourseAssignment, TeacherPerformance
