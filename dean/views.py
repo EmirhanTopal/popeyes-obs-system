@@ -12,54 +12,95 @@ def is_dean_logged(request):
     return request.session.get("role") == "DEAN"
 
 
-def dashboard(request):
+def dekan_dashboard(request):
     if not is_dean_logged(request):
         return redirect("login")
 
+    # === OUTCOMES YÜKLEME ===
+    if request.method == "POST" and request.FILES.get("docx_file"):
+        docx_file = request.FILES["docx_file"]
+        program_type = request.POST.get("program_type", "auto")
+
+        # Geçici dosyaya kaydet
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+            for chunk in docx_file.chunks():
+                tmp.write(chunk)
+            tmp_path = tmp.name
+
+        # Parse
+        importer = OutcomeImporter()
+
+        if program_type == "auto":
+            outcomes, detected_program = importer.parse_docx_file(tmp_path)
+        else:
+            outcomes, detected_program = importer.parse_docx_file(tmp_path, program_type)
+
+        # Kaydet
+        if outcomes and detected_program:
+            for outcome in outcomes:
+                ProgramOutcome.objects.update_or_create(
+                    program=detected_program,
+                    outcome_number=outcome["number"],
+                    defaults={"description": outcome["description"]}
+                )
+
+            messages.success(request, f"✅ {len(outcomes)} outcome yüklendi! ({detected_program})")
+        else:
+            messages.error(request, "❌ Dosya okunamadı ya da outcome bulunamadı.")
+
+        # Sil
+        os.unlink(tmp_path)
+
+        return redirect("dean:dashboard")
+
+    # === İSTATİSTİKLER ===
+    biomedical_count = ProgramOutcome.objects.filter(program="biomedical").count()
+    computer_count = ProgramOutcome.objects.filter(program="computer").count()
+    total_count = biomedical_count + computer_count
+
+    # === ORİJİNAL DASHBOARD VERİLERİ ===
     username = request.session.get("username")
     dean = Dean.objects.filter(user__username=username).select_related("faculty").first()
 
-    if not dean:
-        messages.error(request, "Dekan bulunamadı.")
-        return redirect("login")
-
     departments = Department.objects.filter(faculty=dean.faculty)
 
-    # HOD'nin oluşturduğu yeni dersler
     pending_courses = Course.objects.filter(
         status="PENDING",
         created_by_head__department__faculty=dean.faculty
     )
 
-    # HOD'nin bölüme ders ekleme talepleri
     pending_department_courses = DepartmentCourse.objects.filter(
         approval_status="PENDING",
         department__faculty=dean.faculty
     )
 
-    # HOD atama talepleri
     pending_heads = DepartmentHeadApproval.objects.filter(
         department__faculty=dean.faculty,
         status="PENDING"
     )
 
-    selected_department_id = request.GET.get("dept")
     selected_department = None
     department_courses = None
+    dept_id = request.GET.get("dept")
 
-    if selected_department_id:
-        selected_department = Department.objects.filter(id=selected_department_id).first()
+    if dept_id:
+        selected_department = Department.objects.filter(id=dept_id).first()
         department_courses = DepartmentCourse.objects.filter(department=selected_department)
 
+    # === CONTEXT ===
     context = {
         "username": username,
-        "dean": dean,
-        "departments": departments,
 
-        "pending_courses": pending_courses,                    # yeni dersler
-        "pending_department_courses": pending_department_courses, # bölüme ders ekleme talepleri
+        # Outcomes
+        "biomedical_count": biomedical_count,
+        "computer_count": computer_count,
+        "total_count": total_count,
+
+        # Eski dashboard verileri
+        "pending_courses": pending_courses,
+        "pending_department_courses": pending_department_courses,
         "pending_heads": pending_heads,
-
+        "departments": departments,
         "selected_department": selected_department,
         "department_courses": department_courses,
     }
@@ -149,3 +190,10 @@ def add_teacher(request):
 
     return render(request, "dean/add_teacher.html", {"form": form})
 
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render
+from django.contrib import messages
+import tempfile
+import os
+from outcomes.models import ProgramOutcome
+from outcomes.management.commands.import_outcomes import OutcomeImporter

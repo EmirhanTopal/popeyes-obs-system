@@ -11,20 +11,80 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
-        body { background:#f5f7fb; }
-        .card { border:none; border-radius:1rem; box-shadow:0 4px 16px rgba(0,0,0,.06); }
-        .card-header { border-top-left-radius:1rem!important; border-top-right-radius:1rem!important; }
-        .list-group-item { border:0; border-top:1px solid #f0f2f6; }
-        .section-title { font-weight:700; color:#0d6efd; letter-spacing:.2px; }
-        .shadow-hover { transition:.15s transform ease, .15s box-shadow ease; cursor:pointer; }
-        .shadow-hover:hover { transform: translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.08); }
-        .badge-status { font-size: .75rem; }
+        body {
+            background:#f5f7fb;
+        }
+
+        /* Ana geniş kart */
+        .main-card {
+            border:none;
+            border-radius:1.2rem;
+            box-shadow:0 8px 28px rgba(0,0,0,0.08);
+            margin-bottom:2rem;
+        }
+
+        .main-card .card-header {
+            font-size:1.3rem;
+            padding:1.2rem 1.4rem;
+        }
+
+        .section-title {
+            font-weight:700;
+            color:#0d6efd;
+            letter-spacing:.3px;
+            font-size:1.55rem;
+        }
+
+        /* Stat kartları */
+        .stat-card {
+            padding:1.9rem;
+            background:white;
+            border-radius:1.1rem;
+            box-shadow:0 4px 20px rgba(0,0,0,.07);
+            transition:.15s;
+        }
+        .stat-card:hover {
+            transform:translateY(-3px);
+            box-shadow:0 10px 32px rgba(0,0,0,.1);
+        }
+        .stat-card h2 {
+            font-size:2.7rem;
+            font-weight:800;
+            margin-top:.4rem;
+        }
+
+        /* Yükleme kutusu */
+        .upload-area {
+            background:#fafbff;
+            padding:1.8rem;
+            border:1px solid #e5e7eb;
+            border-radius:1rem;
+        }
+
+        /* Küçük kartlar */
+        .mini-card {
+            border:none;
+            border-radius:1rem;
+            box-shadow:0 6px 18px rgba(0,0,0,.06);
+        }
+
+        .mini-card .card-header {
+            font-size:1rem;
+            padding:.8rem 1rem;
+        }
+
+        .badge-status { font-size:.75rem; }
+
+        .alert {
+            border-radius:.6rem;
+            padding:.75rem 1rem;
+        }
     </style>
 </head>
 
 <body>
 
-<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top shadow-sm">
     <div class="container">
         <a class="navbar-brand fw-bold text-primary" href="#">🎓 Popeyes | Dekan</a>
 
@@ -35,11 +95,12 @@
     </div>
 </nav>
 
+
 <main class="container py-4">
 
     <!-- Başlık -->
     <div class="d-flex align-items-center justify-content-between mb-4">
-        <h2 class="section-title m-0">Dekan Yönetim Paneli</h2>
+        <h2 class="section-title">Dekan Yönetim Paneli</h2>
         <div class="text-muted">
             Hoş geldiniz, <strong>{{ username }}</strong>
         </div>
@@ -49,17 +110,100 @@
     {% if messages %}
         <div class="mb-3">
             {% for m in messages %}
-                <div class="alert alert-{{ m.tags }} shadow-sm py-2">{{ m }}</div>
+                <div class="alert alert-{{ m.tags }}">{{ m }}</div>
             {% endfor %}
         </div>
     {% endif %}
 
 
+    <!-- PROGRAM OUTCOMES BÖLÜMÜ -->
+    <div class="card main-card shadow-hover">
+        <div class="card-header bg-success text-white fw-semibold">
+            📊 Program Outcomes Yönetimi
+        </div>
+
+        <div class="card-body">
+
+            <!-- İstatistikler -->
+            <div class="row g-4 mb-4">
+
+                <div class="col-md-4">
+                    <div class="stat-card text-center">
+                        <h5 class="text-success">🏥 Biyomedikal</h5>
+                        <h2 class="text-success">{{ biomedical_count }}</h2>
+                        <small class="text-muted">Outcome</small>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="stat-card text-center">
+                        <h5 class="text-primary">💻 Bilgisayar</h5>
+                        <h2 class="text-primary">{{ computer_count }}</h2>
+                        <small class="text-muted">Outcome</small>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="stat-card text-center">
+                        <h5 class="text-info">📊 Toplam</h5>
+                        <h2 class="text-info">{{ total_count }}</h2>
+                        <small class="text-muted">Outcome</small>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- DOCX Yükleme -->
+            <div class="upload-area mb-3">
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="row g-3 align-items-end">
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Program Tipi</label>
+                            <select name="program_type" class="form-select">
+                                <option value="auto">🤖 Otomatik Algıla</option>
+                                <option value="biomedical">🏥 Biyomedikal</option>
+                                <option value="computer">💻 Bilgisayar</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-5">
+                            <label class="form-label fw-semibold">DOCX Dosyası</label>
+                            <input type="file" name="docx_file" accept=".docx" required class="form-control">
+                        </div>
+
+                        <div class="col-md-3">
+                            <button class="btn btn-success w-100 fw-semibold">
+                                🚀 Yükle ve İşle
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <div class="text-center">
+                <a href="{% url 'admin:outcomes_programoutcome_changelist' %}" 
+                   class="btn btn-outline-primary fw-semibold">
+                    📋 Tüm Outcomes'ları Görüntüle
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- TALEPLER -->
     <div class="row g-4">
 
-        <!-- ONAY BEKLEYEN YENİ DERS OLUŞTURMA (Course) -->
+        <!-- Yeni Ders Oluşturma -->
         <div class="col-lg-4">
-            <div class="card h-100 shadow-hover">
+            <div class="card mini-card h-100">
                 <div class="card-header bg-warning fw-semibold text-dark">
                     ⏳ Yeni Ders Oluşturma Talepleri
                 </div>
@@ -68,10 +212,8 @@
                     {% for c in pending_courses %}
                         <li class="list-group-item d-flex justify-content-between">
                             <div>
-                                <strong>{{ c.code }}</strong> — {{ c.name }}
-                                <div class="small text-muted">
-                                    Bölüm: {{ c.created_by_head.department.name }}
-                                </div>
+                                <strong>{{ c.code }}</strong> — {{ c.name }}<br>
+                                <small class="text-muted">Bölüm: {{ c.created_by_head.department.name }}</small>
                             </div>
 
                             <div class="d-flex gap-2">
@@ -80,16 +222,15 @@
                             </div>
                         </li>
                     {% empty %}
-                        <li class="list-group-item text-muted">Bekleyen ders yok.</li>
+                        <li class="list-group-item text-muted text-center">Bekleyen ders yok</li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
 
-
-        <!-- BÖLÜME DERS EKLEME TALEPLERİ (DepartmentCourse.pending) -->
+        <!-- Bölüme Ders Ekleme -->
         <div class="col-lg-4">
-            <div class="card h-100 shadow-hover">
+            <div class="card mini-card h-100">
                 <div class="card-header bg-info text-white fw-semibold">
                     📘 Bölüme Ders Ekleme Talepleri
                 </div>
@@ -105,24 +246,20 @@
                             </div>
 
                             <div class="d-flex gap-2">
-                                <a href="{% url 'dean:approve_department_course' dc.id %}"
-                                   class="btn btn-success btn-sm">✔</a>
-
-                                <a href="{% url 'dean:reject_department_course' dc.id %}"
-                                   class="btn btn-danger btn-sm">✖</a>
+                                <a href="{% url 'dean:approve_department_course' dc.id %}" class="btn btn-success btn-sm">✔</a>
+                                <a href="{% url 'dean:reject_department_course' dc.id %}" class="btn btn-danger btn-sm">✖</a>
                             </div>
                         </li>
                     {% empty %}
-                        <li class="list-group-item text-muted">Bekleyen talep yok.</li>
+                        <li class="list-group-item text-muted text-center">Bekleyen talep yok</li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
 
-
-        <!-- BÖLÜM BAŞKANI ATAMA -->
+        <!-- Bölüm Başkanı Atama -->
         <div class="col-lg-4">
-            <div class="card h-100 shadow-hover">
+            <div class="card mini-card h-100">
                 <div class="card-header bg-primary text-white fw-semibold">
                     👤 Bölüm Başkanı Atama Talepleri
                 </div>
@@ -130,23 +267,24 @@
                 <ul class="list-group list-group-flush">
                     {% for req in pending_heads %}
                         <li class="list-group-item">
-                            <strong>{{ req.department.name }}</strong> →
-                            Yeni Başkan: {{ req.new_head.full_name }}
+                            <strong>{{ req.department.name }}</strong> → {{ req.new_head.full_name }}
                         </li>
                     {% empty %}
-                        <li class="list-group-item text-muted">Bekleyen başkan ataması bulunmuyor.</li>
+                        <li class="list-group-item text-muted text-center">Bekleyen atama yok</li>
                     {% endfor %}
                 </ul>
+
             </div>
         </div>
 
     </div>
 
 
-    <!-- Bölüm Listeleme -->
+    <!-- Bölümler -->
     <div class="row g-4 mt-4">
+
         <div class="col-lg-4">
-            <div class="card shadow-hover">
+            <div class="card mini-card">
                 <div class="card-header bg-white fw-semibold">🏫 Bölümler</div>
 
                 <ul class="list-group list-group-flush">
@@ -155,30 +293,26 @@
                             <strong>{{ d.code }}</strong> — {{ d.name }}
                         </a>
                     {% empty %}
-                        <li class="list-group-item text-muted">Kayıt yok.</li>
+                        <li class="list-group-item text-muted text-center">Kayıt bulunmuyor</li>
                     {% endfor %}
                 </ul>
             </div>
         </div>
 
-
         <!-- Bölüm Dersleri -->
         {% if selected_department %}
         <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header fw-semibold">
+            <div class="card mini-card">
+                <div class="card-header bg-white fw-semibold">
                     📚 {{ selected_department.name }} Bölümü — Dersler
                 </div>
 
                 <ul class="list-group list-group-flush">
-
                     {% for dc in department_courses %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-
+                        <li class="list-group-item d-flex justify-content-between">
                             <div>
                                 <strong>{{ dc.course.code }}</strong> — {{ dc.course.name }}
-                                <span class="badge bg-secondary ms-2">{{ dc.semester }}. Dönem</span>
-
+                                <span class="badge bg-secondary">{{ dc.semester }}. Dönem</span>
                                 {% if dc.is_mandatory %}
                                     <span class="badge bg-primary">Zorunlu</span>
                                 {% else %}
@@ -186,18 +320,16 @@
                                 {% endif %}
                             </div>
 
-                            <span class="badge 
+                            <span class="badge
                                 {% if dc.approval_status == 'APPROVED' %} bg-success
                                 {% elif dc.approval_status == 'PENDING' %} bg-warning text-dark
                                 {% else %} bg-danger {% endif %}">
                                 {{ dc.get_approval_status_display }}
                             </span>
-
                         </li>
                     {% empty %}
-                        <li class="list-group-item text-muted">Ders bulunmuyor.</li>
+                        <li class="list-group-item text-muted text-center">Ders bulunmuyor</li>
                     {% endfor %}
-
                 </ul>
             </div>
         </div>
@@ -212,5 +344,6 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

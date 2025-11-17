@@ -4,7 +4,7 @@ from . import views
 app_name = "dean"
 
 urlpatterns = [
-    path("", views.dashboard, name="dashboard"),
+    path("", views.dekan_dashboard, name="dashboard"),
 
     # Yeni ders onayı (Course)
     path("course/approve/<int:pk>/", views.approve_course, name="approve_course"),

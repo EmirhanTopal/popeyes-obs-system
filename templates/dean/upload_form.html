@@ -1,0 +1,33 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>📄 Program Outcome DOCX Yükleme</h2>
+
+    <form method="post" enctype="multipart/form-data" class="mt-4">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">Program Tipi</label>
+            {{ form.program_type }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">DOCX Dosyası</label>
+            {{ form.docx_file }}
+        </div>
+
+        <button type="submit" class="btn btn-success">🚀 Yükle ve İşle</button>
+        <a href="../../" class="btn btn-secondary ms-2">Geri Dön</a>
+    </form>
+
+    {% if messages %}
+        <div class="mt-4">
+            {% for m in messages %}
+                <div class="alert alert-{{ m.tags }}">{{ m }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
