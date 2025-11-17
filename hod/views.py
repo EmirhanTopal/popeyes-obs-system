@@ -8,6 +8,8 @@ from academics.models import Level
 from django.contrib import messages
 from .models import TeacherCourseAssignment, TeacherPerformance
 from django.utils import timezone
+from courses.models import CourseAssessmentComponent
+
 
 def dashboard(request):
     if request.session.get("role") != "HOD":
