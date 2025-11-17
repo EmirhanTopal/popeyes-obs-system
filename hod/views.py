@@ -158,17 +158,21 @@ def create_course(request):
             teacher_ids = request.POST.getlist("teachers")
 
             for t_id in teacher_ids:
-                # Kayıt tablosu
-                TeacherCourseAssignment.objects.create(
-                    teacher_id=t_id,
-                    course=course,
-                    semester=1,
-                    year=timezone.now().year,
-                    is_active=True
-                )
+                teacher = Teacher.objects.get(id=t_id)
 
-                # M2M bağlantı
-                course.teachers.add(t_id)
+                # 1) M2M ilişkisini güncelle
+                course.teachers.add(teacher)
+
+                # 2) Opsiyonel: TeacherCourseAssignment tablosuna da kaydet
+                TeacherCourseAssignment.objects.get_or_create(
+                    teacher=teacher,
+                    course=course,
+                    defaults={
+                        "semester": semester,
+                        "year": timezone.now().year,
+                        "is_active": True,
+                    }
+                )
 
             messages.success(request, "Ders başarıyla oluşturuldu ve onaya gönderildi.")
             return redirect("hod:dashboard")

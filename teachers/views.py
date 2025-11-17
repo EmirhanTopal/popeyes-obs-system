@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
+from accounts.models import SimpleUser
 
 from .models import Teacher, TeacherSchedule, OfficeHour
 from .forms import (
@@ -28,7 +29,8 @@ def teacher_dashboard(request):
         return redirect("login")
 
     # 🔥 ÖNEMLİ: Öğretmene atanan dersler (ManyToMany)
-    active_courses = teacher.courses.filter(is_active=True)
+    active_courses = teacher.courses.all()
+
 
     # Yaklaşan programlar
     upcoming_schedules = teacher.schedules.all().order_by("day_of_week", "start_time")[:5]
@@ -188,19 +190,28 @@ def course_management(request):
 
     username = request.session.get("username")
 
-    teacher = Teacher.objects.filter(user__username=username).first()
+    # 1) SimpleUser objesini bul
+    simple_user = SimpleUser.objects.filter(username=username).first()
+
+    if not simple_user:
+        messages.error(request, "Kullanıcı bulunamadı.")
+        return redirect("login")
+
+    # 2) Teacher objesini bul
+    teacher = Teacher.objects.filter(user=simple_user).first()
 
     if not teacher:
         messages.error(request, "Öğretmen profili bulunamadı.")
         return redirect("login")
 
-    # 🔥 Öğretmene atanmış dersler (ManyToMany)
+    # 3) Öğretmenin dersleri (ManyToMany)
     courses = teacher.courses.filter(is_active=True)
 
     return render(request, "teachers/course_management.html", {
         "teacher": teacher,
         "courses": courses,
     })
+
 
 
 
