@@ -148,3 +148,4 @@ def add_teacher(request):
         form = TeacherForm()
 
     return render(request, "dean/add_teacher.html", {"form": form})
+

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Devamsızlık Bilgisi{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="card shadow-sm p-4">
+        <h3 class="fw-bold mb-3">Devamsızlık Bilgisi</h3>
+
+        {% if student %}
+
+            {% if student.attendance_records.all %}
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Ders</th>
+                            <th>Tarih</th>
+                            <th>Kaç Saat Kaçırıldı</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in student.attendance_records.all %}
+                        <tr>
+                            <td>{{ a.course.code }} - {{ a.course.name }}</td>
+                            <td>{{ a.date }}</td>
+                            <td>{{ a.hours_missed }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-info">
+                    Henüz devamsızlık kaydınız bulunmamaktadır.
+                </div>
+            {% endif %}
+
+        {% else %}
+            <div class="alert alert-danger">
+                Öğrenci hesabınız bulunamadı.
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

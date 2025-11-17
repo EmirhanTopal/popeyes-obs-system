@@ -80,23 +80,3 @@ class TeacherForm(forms.ModelForm):
             teacher.save()
 
         return teacher
-
-# ===========================
-#  Öğrenci Ekleme Formu
-# ===========================
-class StudentForm(forms.ModelForm):
-    class Meta:
-        model = Student
-        fields = [
-            "student_no",
-            "full_name",
-            "email",
-            "departments",
-        ]
-
-    departments = forms.ModelMultipleChoiceField(
-        queryset=Department.objects.all(),
-        widget=forms.SelectMultiple(attrs={"size": 6}),
-        required=True,
-    )
-

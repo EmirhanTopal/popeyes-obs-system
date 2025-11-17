@@ -217,3 +217,30 @@ class Enrollment(models.Model):
 
     def __str__(self):
         return f"{self.student} -> {self.offering} ({self.get_status_display()})"
+    
+    # ============================================================
+# COURSE ATTENDANCE
+# ============================================================
+class CourseAttendance(models.Model):
+    enrollment = models.ForeignKey(
+        Enrollment,
+        on_delete=models.CASCADE,
+        related_name="attendances"
+    )
+    schedule = models.ForeignKey(
+        CourseSchedule,
+        on_delete=models.CASCADE,
+        related_name="attendances"
+    )
+    attended = models.BooleanField(default=False, verbose_name="Katıldı")
+    note = models.CharField(max_length=255, blank=True, verbose_name="Not")
+    recorded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("enrollment", "schedule")
+        ordering = ["schedule__day", "schedule__start_time"]
+
+    def __str__(self):
+        status = "Katıldı" if self.attended else "Katılmadı"
+        return f"{self.enrollment.student} - {self.schedule} ({status})"
+
