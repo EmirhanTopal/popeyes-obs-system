@@ -122,10 +122,6 @@ def create_course(request):
                 status="PENDING",
                 created_by_head=hod,
                 semester=semester,
-                midterm_weight=0,
-                final_weight=0,
-                assignment_weight=0,
-                attendance_weight=0,
             )
 
             # Önkoşullar
@@ -137,18 +133,19 @@ def create_course(request):
             # -----------------------------
             counter = 1
             while True:
-                name_key = f"component_name_{counter}"
+                type_key = f"component_type_{counter}"
                 weight_key = f"component_weight_{counter}"
 
-                if name_key not in request.POST:
+                if type_key not in request.POST:
                     break
 
-                comp_name = request.POST.get(name_key)
+                component_type = request.POST.get(type_key)
                 comp_weight = int(request.POST.get(weight_key) or 0)
 
+                # 🔥 models.py'deki alan adı "type"
                 CourseAssessmentComponent.objects.create(
                     course=course,
-                    name=comp_name,
+                    type=component_type,
                     weight=comp_weight
                 )
 

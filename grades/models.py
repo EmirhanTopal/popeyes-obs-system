@@ -1,42 +1,16 @@
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-
 from accounts.models import SimpleUser
-from courses.models import CourseOffering
+from courses.models import CourseOffering, CourseAssessmentComponent
 
 
 # ============================================================
-# HARF NOTU TABLOSU
-# ============================================================
-class LetterGradeScale(models.Model):
-    """
-    Yönetici panelinden düzenlenebilir harf notu ölçeği.
-    Örnek:
-        AA: 90 - 100 → 4.0
-        BA: 85 - 89  → 3.5
-    """
-
-    letter = models.CharField(max_length=2, unique=True)
-    min_score = models.FloatField()
-    max_score = models.FloatField()
-    gpa_value = models.FloatField(help_text="4.0 sistemi katsayısı")
-
-    class Meta:
-        ordering = ["-gpa_value"]
-
-    def __str__(self):
-        return f"{self.letter} ({self.min_score}-{self.max_score})"
-
-
-
-# ============================================================
-# GRADES MODEL
+# GRADE MODEL (ANA TABLO)
 # ============================================================
 class Grade(models.Model):
     """
     Bir öğrencinin bir şubedeki notlarını tutar.
-        SimpleUser + CourseOffering = Unique
+    Artık NOTLAR DİNAMİK, bileşenler GradeComponent tablosunda tutulur.
     """
 
     student = models.ForeignKey(
@@ -51,12 +25,7 @@ class Grade(models.Model):
         related_name="grades"
     )
 
-    # Notlar
-    midterm = models.FloatField(null=True, blank=True, verbose_name="Vize")
-    final = models.FloatField(null=True, blank=True, verbose_name="Final")
-    makeup = models.FloatField(null=True, blank=True, verbose_name="Bütünleme")
-
-    # Hesaplanmış alanlar
+    # Hesaplanan bilgiler
     total_score = models.FloatField(null=True, blank=True)
     letter_grade = models.CharField(max_length=2, null=True, blank=True)
     gpa_value = models.FloatField(null=True, blank=True)
@@ -64,27 +33,32 @@ class Grade(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ("student", "offering")  # aynı öğrenci aynı dersi 1 kez alır
+        unique_together = ("student", "offering")
         verbose_name = "Not"
         verbose_name_plural = "Notlar"
 
-    # ============================================================
-    # HESAPLAMALAR
-    # ============================================================
-
+    # ========================
+    # DİNAMİK NOT HESAPLAMA
+    # ========================
     def calculate_total(self):
-        """Vize %40, Final/Bütünleme %60"""
-        if self.midterm is None:
+        components = self.component_grades.select_related("component")
+
+        if not components.exists():
             return None
 
-        exam = self.makeup if self.makeup is not None else self.final
-        if exam is None:
-            return None
+        total = 0
 
-        return round(self.midterm * 0.40 + exam * 0.60, 2)
+        for c in components:
+            if c.score is None:
+                return None  # tüm bileşenler girilmemişse hesaplama yok
+
+            weight = c.component.weight / 100
+            total += c.score * weight
+
+        return round(total, 2)
 
     def assign_letter_grade(self):
-        """LetterGradeScale tablosundan uygun harf notunu bulur."""
+        """Harf notu bulma"""
         if self.total_score is None:
             return None, None
 
@@ -99,25 +73,75 @@ class Grade(models.Model):
         return "FF", 0.0
 
     def save(self, *args, **kwargs):
+
+        # 1) İlk kez oluşturuluyorsa sadece kaydet
+        if not self.pk:
+            super().save(*args, **kwargs)
+            return
+
+        # 2) Artık component_grades erişilebilir → hesaplama yap
         self.total_score = self.calculate_total()
 
         if self.total_score is not None:
             self.letter_grade, self.gpa_value = self.assign_letter_grade()
+        else:
+            self.letter_grade = None
+            self.gpa_value = None
 
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.student} -> {self.offering}: {self.letter_grade}"
+        return f"{self.student} → {self.offering} ({self.letter_grade})"
 
 
 # ============================================================
-# TRANSCRIPT / GPA YARDIMCI SINIFI
+# DİNAMİK NOT TABLOSU (Vize, Final, Quiz, Proje vs)
+# ============================================================
+class GradeComponent(models.Model):
+    grade = models.ForeignKey(
+        Grade,
+        on_delete=models.CASCADE,
+        related_name="component_grades"
+    )
+
+    component = models.ForeignKey(
+        CourseAssessmentComponent,
+        on_delete=models.CASCADE
+    )
+
+    score = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ("grade", "component")
+
+    def __str__(self):
+        return f"{self.grade.student} - {self.component.get_type_display()} : {self.score}"
+
+
+# ============================================================
+# HARF NOTU TABLOSU (AA-FF)
+# ============================================================
+class LetterGradeScale(models.Model):
+
+    letter = models.CharField(max_length=2, unique=True)
+    min_score = models.FloatField()
+    max_score = models.FloatField()
+    gpa_value = models.FloatField(help_text="4.0 sistemi katsayısı")
+
+    class Meta:
+        ordering = ["-gpa_value"]
+
+    def __str__(self):
+        return f"{self.letter} ({self.min_score}-{self.max_score})"
+
+
+# ============================================================
+# TRANSCRIPT / GPA HESAPLAYICI
 # ============================================================
 class TranscriptManager:
 
     @staticmethod
     def calculate_gpa(student):
-        """Öğrenci genel GPA."""
         grades = Grade.objects.filter(
             student=student,
             letter_grade__isnull=False
@@ -131,7 +155,6 @@ class TranscriptManager:
 
     @staticmethod
     def semester_grades(student, year, semester):
-        """Belirli dönem not dökümü."""
         return Grade.objects.filter(
             student=student,
             offering__year=year,
@@ -140,7 +163,6 @@ class TranscriptManager:
 
     @staticmethod
     def course_statistics(offering):
-        """Şube bazlı istatistikler."""
         grades = Grade.objects.filter(
             offering=offering,
             total_score__isnull=False
