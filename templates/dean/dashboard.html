@@ -55,6 +55,92 @@
     {% endif %}
 
 
+    <!-- PROGRAM OUTCOMES BÖLÜMÜ -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card shadow-hover">
+                <div class="card-header bg-success text-white fw-semibold">
+                    📊 Program Outcomes Yönetimi
+                </div>
+                <div class="card-body">
+                    
+                    <!-- İstatistikler -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-center">
+                            <div class="stat-card p-3 bg-light rounded">
+                                <h5 class="text-success">🏥 Biyomedikal</h5>
+                                <h2 class="text-success">{{ biomedical_count }}</h2>
+                                <small class="text-muted">Outcome</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="stat-card p-3 bg-light rounded">
+                                <h5 class="text-primary">💻 Bilgisayar</h5>
+                                <h2 class="text-primary">{{ computer_count }}</h2>
+                                <small class="text-muted">Outcome</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="stat-card p-3 bg-light rounded">
+                                <h5 class="text-info">📊 Toplam</h5>
+                                <h2 class="text-info">{{ total_count }}</h2>
+                                <small class="text-muted">Outcome</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dosya Yükleme Formu -->
+                    <form method="post" enctype="multipart/form-data" class="border-top pt-4">
+                        {% csrf_token %}
+                        <h6 class="text-muted mb-3">📄 Yeni DOCX Dosyası Yükle</h6>
+                        
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Program Tipi:</label>
+                                <select name="program_type" class="form-select">
+                                    <option value="auto">🤖 Otomatik Algıla</option>
+                                    <option value="biomedical">🏥 Biyomedikal</option>
+                                    <option value="computer">💻 Bilgisayar</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <label class="form-label fw-semibold">DOCX Dosyası:</label>
+                                <input type="file" name="docx_file" class="form-control" accept=".docx" required>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-success w-100">
+                                    🚀 Yükle ve İşle
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                📝 YÖK program outcomes DOCX dosyasını yükleyin, sistem otomatik işleyecektir.
+                            </small>
+                        </div>
+                    </form>
+
+                    <!-- Outcomes Listeleme Linki -->
+                    <div class="mt-3 text-center">
+                        <a href="{% url 'admin:outcomes_programoutcome_changelist' %}" 
+                           class="btn btn-outline-primary btn-sm">
+                            📋 Tüm Outcomes'ları Görüntüle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ONAY BEKLEYEN YENİ DERS OLUŞTURMA (Course) -->
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <!-- ... mevcut ders onay kodu ... -->
+
+
     <div class="row g-4">
 
         <!-- ONAY BEKLEYEN YENİ DERS OLUŞTURMA (Course) -->

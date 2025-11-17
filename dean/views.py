@@ -149,3 +149,69 @@ def add_teacher(request):
 
     return render(request, "dean/add_teacher.html", {"form": form})
 
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render
+from django.contrib import messages
+import tempfile
+import os
+from outcomes.models import ProgramOutcome
+from outcomes.management.commands.import_outcomes import OutcomeImporter
+
+def dekan_dashboard(request):
+    # PROGRAM OUTCOMES YÜKLEME
+    if request.method == 'POST' and request.FILES.get('docx_file'):
+        docx_file = request.FILES['docx_file']
+        program_type = request.POST.get('program_type', 'auto')
+        
+        # Geçici dosyaya kaydet
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as tmp_file:
+            for chunk in docx_file.chunks():
+                tmp_file.write(chunk)
+            tmp_path = tmp_file.name
+        
+        # Import işlemi
+        importer = OutcomeImporter()
+        
+        if program_type == 'auto':
+            outcomes, detected_program = importer.parse_docx_file(tmp_path)
+        else:
+            outcomes, detected_program = importer.parse_docx_file(tmp_path, program_type)
+        
+        if outcomes and detected_program:
+            for outcome in outcomes:
+                ProgramOutcome.objects.update_or_create(
+                    program=detected_program,
+                    outcome_number=outcome['number'],
+                    defaults={'description': outcome['description']}
+                )
+            
+            messages.success(request, f'✅ {len(outcomes)} outcome başarıyla yüklendi! ({detected_program})')
+        else:
+            messages.error(request, '❌ Dosyadan outcome çıkarılamadı!')
+        
+        # Geçici dosyayı sil
+        os.unlink(tmp_path)
+    
+    # PROGRAM OUTCOMES İSTATİSTİKLERİ
+    biomedical_count = ProgramOutcome.objects.filter(program='biomedical').count()
+    computer_count = ProgramOutcome.objects.filter(program='computer').count()
+    total_count = biomedical_count + computer_count
+    
+    # MEVCUT CONTEXT (senin orijinal kodlarına ekle)
+    context = {
+        # Outcomes istatistikleri
+        'biomedical_count': biomedical_count,
+        'computer_count': computer_count,
+        'total_count': total_count,
+        
+        # Orijinal context değişkenleri (seninkiler)
+        'username': request.user.username,
+        'pending_courses': [],  # bunları senin kodundan al
+        'pending_department_courses': [],
+        'pending_heads': [],
+        'departments': [],
+        'selected_department': None,
+        'department_courses': [],
+    }
+    
+    return render(request, 'dekan/dashboard.html', context)
