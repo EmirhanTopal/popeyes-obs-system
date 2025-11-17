@@ -4,6 +4,7 @@ from django.db import models
 from teachers.models import Teacher
 from accounts.models import SimpleUser
 from courses.models import CourseOffering
+from django.utils.translation import gettext_lazy as _
 
 class Student(models.Model):
     user = models.OneToOneField(SimpleUser, on_delete=models.CASCADE)

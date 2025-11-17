@@ -38,6 +38,7 @@
                 <div class="alert alert-danger">{{ error }}</div>
             {% endif %}
 
+            <!-- FORM DOĞRU YERDE BAŞLIYOR -->
             <form method="post">
                 {% csrf_token %}
 
@@ -133,49 +134,61 @@
 
                 <small class="text-muted d-block mt-2">Toplam %100 olmalıdır.</small>
 
-                <hr>
-
-                <button class="btn btn-primary">Onaya Gönder</button>
-                <a href="{% url 'hod:dashboard' %}" class="btn btn-outline-secondary ms-2">İptal</a>
-
+                <!-- FORM BURADA DOĞRU KAPANIYOR -->
+                <button class="btn btn-primary mt-3">Onaya Gönder</button>
             </form>
+
         </div>
-
     </div>
-
 </div>
 
 <script>
 let counter = 0;
+
+const componentOptions = `
+    <option value="MIDTERM">Vize</option>
+    <option value="FINAL">Final</option>
+    <option value="ASSIGNMENT">Ödev</option>
+    <option value="ATTENDANCE">Derse Katılım</option>
+    <option value="QUIZ">Quiz</option>
+    <option value="PROJECT">Proje</option>
+`;
 
 document.getElementById("addComponentBtn").addEventListener("click", () => {
     counter++;
 
     let container = document.getElementById("componentsContainer");
 
-    let row = document.createElement("div");
-    row.classList.add("component-box");
+    let box = document.createElement("div");
+    box.classList.add("component-box");
 
-    row.innerHTML = `
-        <div class="row g-2">
-            <div class="col-md-6">
-                <input type="text" name="component_name_${counter}" class="form-control"
-                       placeholder="Bileşen adı (Vize 1, Quiz...)" required>
+    box.innerHTML = `
+        <div class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <select name="component_type_${counter}" class="form-select" required>
+                    <option value="">Bileşen Seç</option>
+                    ${componentOptions}
+                </select>
             </div>
-            <div class="col-md-4">
-                <input type="number" name="component_weight_${counter}" class="form-control"
-                       min="1" max="100" placeholder="Ağırlık (%)" required>
+
+            <div class="col-md-5">
+                <input type="number" name="component_weight_${counter}"
+                       class="form-control" min="1" max="100"
+                       placeholder="Ağırlık (%)" required>
             </div>
+
             <div class="col-md-2">
-                <button type="button" class="btn btn-danger btn-sm w-100 removeBtn">Sil</button>
+                <button type="button" class="btn btn-danger btn-sm w-100 removeBtn">
+                    Sil
+                </button>
             </div>
         </div>
     `;
 
-    container.appendChild(row);
+    container.appendChild(box);
 
-    row.querySelector(".removeBtn").addEventListener("click", () => {
-        row.remove();
+    box.querySelector(".removeBtn").addEventListener("click", () => {
+        box.remove();
     });
 });
 </script>

@@ -38,9 +38,10 @@ class CourseContentAdmin(admin.ModelAdmin):
 
 @admin.register(CourseAssessmentComponent)
 class CourseAssessmentComponentAdmin(admin.ModelAdmin):
-    list_display = ('course', 'name', 'weight')
-    list_filter = ('course',)
-    search_fields = ('course__code', 'name')
+    list_display = ("course", "type", "weight")
+    list_filter = ("type", "course")
+    search_fields = ("course__code", "course__name", "type")
+
 
 
 @admin.register(Enrollment)
