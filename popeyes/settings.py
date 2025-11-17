@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "departments",
     "grades",
     "courses"
+    'outcomes',
 ]
 
 MIDDLEWARE = [
