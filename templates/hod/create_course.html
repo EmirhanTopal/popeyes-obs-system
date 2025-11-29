@@ -9,14 +9,7 @@
     <style>
         body { background:#f5f7fb; }
         .card { border-radius:12px; }
-        .section-title { font-weight:600; color:#0d6efd; }
-        .component-box {
-            background:#fff;
-            padding:10px 12px;
-            border-radius:6px;
-            border:1px solid #e5e5e5;
-            margin-bottom:8px;
-        }
+        .section-title { font-weight:600; color:#0d6efd; margin-top:1.2rem; }
     </style>
 </head>
 
@@ -29,7 +22,7 @@
     <div class="card shadow-sm">
 
         <div class="card-header fw-semibold">
-            Yeni Ders Oluştur — {{ department.name }}
+            🆕 Yeni Ders Oluştur — {{ department.name }}
         </div>
 
         <div class="card-body">
@@ -38,15 +31,14 @@
                 <div class="alert alert-danger">{{ error }}</div>
             {% endif %}
 
-            <!-- FORM DOĞRU YERDE BAŞLIYOR -->
+            <!-- FORM -->
             <form method="post">
                 {% csrf_token %}
 
                 <!-- ================= BASIC ================= -->
-                <h5 class="section-title mb-3">Ders Bilgileri</h5>
+                <h5 class="section-title mb-3">📘 Ders Bilgileri</h5>
 
                 <div class="row g-3">
-
                     <div class="col-md-4">
                         <label class="form-label">Ders Kodu</label>
                         <input type="text" name="code" class="form-control" required>
@@ -92,14 +84,12 @@
                             <option value="2">2. Dönem</option>
                         </select>
                     </div>
-
                 </div>
 
                 <hr>
 
                 <!-- ============== TEACHERS ============== -->
-                <h5 class="section-title">Derse Atanacak Öğretim Görevlileri</h5>
-
+                <h5 class="section-title">👩‍🏫 Derse Atanacak Öğretim Görevlileri</h5>
                 <select name="teachers" class="form-select mb-3" multiple size="5">
                     {% for t in teachers %}
                         <option value="{{ t.id }}">
@@ -107,91 +97,28 @@
                         </option>
                     {% endfor %}
                 </select>
-
                 <small class="text-muted">Ctrl / Cmd ile birden fazla öğretmen seçebilirsiniz.</small>
 
                 <hr>
 
                 <!-- ============== PREREQ ============== -->
-                <h5 class="section-title">Önkoşullu Dersler</h5>
-
+                <h5 class="section-title">📗 Önkoşullu Dersler</h5>
                 <select name="prerequisites" class="form-select mb-3" multiple size="5">
                     {% for c in all_courses %}
                         <option value="{{ c.id }}">{{ c.code }} — {{ c.name }}</option>
                     {% endfor %}
                 </select>
 
-                <hr>
-
-                <!-- ============== ASSESSMENT COMPONENTS ============== -->
-                <h5 class="section-title">Değerlendirme Bileşenleri (%)</h5>
-
-                <div id="componentsContainer"></div>
-
-                <button type="button" id="addComponentBtn" class="btn btn-secondary btn-sm">
-                    + Bileşen Ekle
-                </button>
-
-                <small class="text-muted d-block mt-2">Toplam %100 olmalıdır.</small>
-
-                <!-- FORM BURADA DOĞRU KAPANIYOR -->
-                <button class="btn btn-primary mt-3">Onaya Gönder</button>
+                <!-- SUBMIT -->
+                <div class="mt-4">
+                    <button class="btn btn-primary w-100 py-2 fw-semibold">
+                        💾 Dersi Kaydet
+                    </button>
+                </div>
             </form>
-
         </div>
     </div>
 </div>
-
-<script>
-let counter = 0;
-
-const componentOptions = `
-    <option value="MIDTERM">Vize</option>
-    <option value="FINAL">Final</option>
-    <option value="ASSIGNMENT">Ödev</option>
-    <option value="ATTENDANCE">Derse Katılım</option>
-    <option value="QUIZ">Quiz</option>
-    <option value="PROJECT">Proje</option>
-`;
-
-document.getElementById("addComponentBtn").addEventListener("click", () => {
-    counter++;
-
-    let container = document.getElementById("componentsContainer");
-
-    let box = document.createElement("div");
-    box.classList.add("component-box");
-
-    box.innerHTML = `
-        <div class="row g-2 align-items-center">
-            <div class="col-md-5">
-                <select name="component_type_${counter}" class="form-select" required>
-                    <option value="">Bileşen Seç</option>
-                    ${componentOptions}
-                </select>
-            </div>
-
-            <div class="col-md-5">
-                <input type="number" name="component_weight_${counter}"
-                       class="form-control" min="1" max="100"
-                       placeholder="Ağırlık (%)" required>
-            </div>
-
-            <div class="col-md-2">
-                <button type="button" class="btn btn-danger btn-sm w-100 removeBtn">
-                    Sil
-                </button>
-            </div>
-        </div>
-    `;
-
-    container.appendChild(box);
-
-    box.querySelector(".removeBtn").addEventListener("click", () => {
-        box.remove();
-    });
-});
-</script>
 
 </body>
 </html>

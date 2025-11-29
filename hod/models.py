@@ -48,20 +48,27 @@ class Head(models.Model):
 
 
 class TeacherCourseAssignment(models.Model):
-    """
-    Head, öğretmenlere ders atar.
-    """
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name="assignments")
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    semester = models.PositiveSmallIntegerField(default=1)
-    year = models.PositiveIntegerField()  # Akademik yıl
+    teacher = models.ForeignKey(
+        Teacher,
+        on_delete=models.CASCADE,
+        related_name="assignments"  # 🔥 Bunu EKLE
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="assignments"
+    )
+    semester = models.PositiveIntegerField(default=1)
+    year = models.PositiveIntegerField(default=2025)
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ("teacher", "course", "semester", "year")
+        verbose_name = "Öğretmen-Ders Ataması"
+        verbose_name_plural = "Öğretmen-Ders Atamaları"
+        ordering = ["teacher", "course"]
 
     def __str__(self):
-        return f"{self.course.code} → {self.teacher.user.get_full_name()}"
+        return f"{self.teacher.full_name} — {self.course.name}"
 
 class CourseStatistic(models.Model):
     """

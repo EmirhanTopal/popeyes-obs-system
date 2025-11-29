@@ -4,18 +4,12 @@ from django.utils.translation import gettext_lazy as _
 
 from accounts.models import SimpleUser
 from academics.models import Level
-
+from outcomes.models import LearningOutcome
 
 # ============================================================
 # COURSE MODEL
 # ============================================================
 class Course(models.Model):
-    STATUS_CHOICES = [
-        ("PENDING", "Onay Bekliyor"),
-        ("APPROVED", "Onaylandı"),
-        ("REJECTED", "Reddedildi"),
-    ]
-
     COURSE_TYPE_CHOICES = [
         ("POOL", "Havuz Dersi"),
         ("FACULTY", "Fakülte Dersi"),
@@ -41,11 +35,6 @@ class Course(models.Model):
         verbose_name="Ders Türü",
     )
 
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="PENDING",
-    )
     semester = models.PositiveSmallIntegerField(default=1, verbose_name="Dönem")
 
     # Head hangi bölüm için oluşturmuş?
@@ -63,6 +52,7 @@ class Course(models.Model):
         blank=True,
     )
 
+    # Önşartlı dersler
     prerequisites = models.ManyToManyField(
         "self",
         symmetrical=False,
@@ -81,6 +71,26 @@ class Course(models.Model):
         if self.pk and self.prerequisites.filter(pk=self.pk).exists():
             raise ValidationError(_("Bir ders kendisini önkoşul olarak içeremez."))
 
+
+class CourseEnrollment(models.Model):
+    course = models.ForeignKey("courses.Course", on_delete=models.CASCADE, related_name="enrollments")
+    student = models.ForeignKey("students.Student", on_delete=models.CASCADE, related_name="course_enrollments")
+    date_enrolled = models.DateField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    class Meta:
+        unique_together = ("course", "student")
+
+    def __str__(self):
+        return f"{self.student} - {self.course.code}"
+
+
+class CourseGrade(models.Model):
+    enrollment = models.ForeignKey(CourseEnrollment, on_delete=models.CASCADE, related_name="grades")
+    component = models.ForeignKey("courses.CourseAssessmentComponent", on_delete=models.CASCADE)
+    score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.enrollment.student} - {self.component.type} - {self.score}"
 
 # ============================================================
 # COURSE COMPONENTS
@@ -289,3 +299,77 @@ class CourseAttendance(models.Model):
     def __str__(self):
         status = "Katıldı" if self.attended else "Katılmadı"
         return f"{self.enrollment.student} - {self.schedule} ({status})"
+
+
+
+# ============================================================
+# COMPONENT ↔ LEARNING OUTCOME İLİŞKİSİ
+# ============================================================
+class ComponentLearningRelation(models.Model):
+    component = models.ForeignKey(
+        CourseAssessmentComponent,
+        on_delete=models.CASCADE,
+        related_name="learning_relations"
+    )
+    learning_outcome = models.ForeignKey(
+        LearningOutcome,
+        on_delete=models.CASCADE,
+        related_name="component_relations"
+    )
+    weight = models.FloatField(default=0, verbose_name="Etki Oranı (%)")
+
+    def __str__(self):
+        return f"{self.component} → {self.learning_outcome} (%{self.weight})"
+
+
+# ============================================================
+# LEARNING OUTCOME ↔ PROGRAM OUTCOME İLİŞKİSİ
+# ============================================================
+
+
+# ============================================================
+# COMPONENT – LEARNING OUTCOME – PROGRAM OUTCOME RELATION
+# ============================================================
+class ComponentLearningProgramRelation(models.Model):
+    component = models.ForeignKey(
+        "courses.CourseAssessmentComponent",
+        on_delete=models.CASCADE,
+        related_name="learning_program_relations"
+    )
+    learning_outcome = models.ForeignKey(
+        "outcomes.LearningOutcome",
+        on_delete=models.CASCADE,
+        related_name="program_component_relations"
+    )
+    program_outcome = models.ForeignKey(
+        "outcomes.ProgramOutcome",
+        on_delete=models.CASCADE,
+        related_name="learning_component_relations"
+    )
+    learning_weight = models.PositiveSmallIntegerField(default=0, verbose_name="Learning Outcome Katkısı (%)")
+    program_weight = models.PositiveSmallIntegerField(default=0, verbose_name="Program Outcome Katkısı (%)")
+
+    class Meta:
+        verbose_name = "Component – Learning & Program Outcome İlişkisi"
+        verbose_name_plural = "Component – Learning & Program Outcome İlişkileri"
+        ordering = ["component", "learning_outcome"]
+
+
+class LearningProgramRelation(models.Model):
+    learning_outcome = models.ForeignKey(
+        "outcomes.LearningOutcome",
+        on_delete=models.CASCADE,
+        related_name="program_mappings"
+    )
+    program_outcome = models.ForeignKey(
+        "outcomes.ProgramOutcome",
+        on_delete=models.CASCADE,
+        related_name="learning_mappings"
+    )
+    weight = models.FloatField(default=0.0)  # LO'nun PO’ya katkı yüzdesi (%)
+
+    class Meta:
+        unique_together = ("learning_outcome", "program_outcome")
+
+    def __str__(self):
+        return f"{self.learning_outcome.code} → {self.program_outcome.code} (%{self.weight})"

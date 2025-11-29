@@ -18,20 +18,11 @@ class DocumentUploadForm(forms.Form):
 
 @admin.register(ProgramOutcome)
 class ProgramOutcomeAdmin(admin.ModelAdmin):
-    list_display = ['program_display', 'outcome_number', 'description_short']
-    list_filter = ['program']
-    search_fields = ['description']
+    list_display = ("id", "code", "description", "department")
+    list_filter = ("department",)
+    search_fields = ("code", "description")
 
-    # Detaylı görünüm için
-    fieldsets = [
-        (None, {
-            'fields': ['program', 'outcome_number']
-        }),
-        ('Açıklama', {
-            'fields': ['description'],
-            'classes': ['wide']
-        }),
-    ]
+
 
     def get_urls(self):
         urls = super().get_urls()

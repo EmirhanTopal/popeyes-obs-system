@@ -1,16 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from accounts.models import SimpleUser
 from departments.models import DepartmentCourse, DepartmentStatistic
-from teachers.models import Teacher,TeacherSchedule
+from teachers.models import Teacher, TeacherSchedule
 from hod.models import Head
 from courses.models import Course, CourseOffering, CourseAssessmentComponent
 from academics.models import Level
 from django.contrib import messages
 from .models import TeacherCourseAssignment, TeacherPerformance
 from django.utils import timezone
-from courses.models import CourseAssessmentComponent
 
 
+# ============================================================
+# DASHBOARD
+# ============================================================
 def dashboard(request):
     if request.session.get("role") != "HOD":
         return redirect("login")
@@ -33,34 +35,19 @@ def dashboard(request):
 
     teachers = Teacher.objects.filter(department=department)
 
-    pending_courses = Course.objects.filter(
-        created_by_head=hod,
-        status="PENDING"
-    )
-
-    pending_department_courses = DepartmentCourse.objects.filter(
-        department=department,
-        approval_status="PENDING"
-    )
-
+    # ✅ Dean onayı kalktığı için pending_course kavramı artık yok
     return render(request, "hod/dashboard.html", {
         "username": username,
         "department": department,
         "stats": stats,
         "dept_courses": dept_courses,
         "teachers": teachers,
-        "pending_courses": pending_courses,
-        "pending_department_courses": pending_department_courses,
     })
 
 
-def add_offering(request, course_id):
-    course = get_object_or_404(Course, id=course_id)
-
-    # Henüz tasarlanmamışsa boş bir sayfa bile yeter
-    return render(request, "hod/add_offering.html", {"course": course})
-
-
+# ============================================================
+# DERS OLUŞTURMA
+# ============================================================
 def create_course(request):
     if request.session.get("role") != "HOD":
         return redirect("login")
@@ -78,32 +65,17 @@ def create_course(request):
     teachers = Teacher.objects.filter(department=department)
     level_list = Level.objects.all()
     all_courses = Course.objects.all()
-
     error = None
 
     if request.method == "POST":
         code = request.POST.get("code", "").strip().upper()
         name = request.POST.get("name", "").strip()
-
         credit = request.POST.get("credit") or None
         ects = request.POST.get("ects") or None
         level_id = request.POST.get("level")
         course_type = request.POST.get("course_type")
         semester = request.POST.get("semester") or 1
 
-        # -----------------------------
-        # DİNAMİK BİLEŞEN TOPLAMI
-        # -----------------------------
-        total_weight = 0
-        for key in request.POST.keys():
-            if key.startswith("component_weight_"):
-                try:
-                    total_weight += int(request.POST[key])
-                except:
-                    pass
-
-        if total_weight != 100:
-            error = f"Değerlendirme bileşenlerinin toplamı 100 olmalıdır. (Şu an {total_weight})"
 
         if Course.objects.filter(code=code).exists():
             error = "Bu kodla kayıtlı bir ders zaten var."
@@ -119,9 +91,19 @@ def create_course(request):
                 ects=ects,
                 level_id=level_id,
                 course_type=course_type,
-                status="PENDING",
                 created_by_head=hod,
                 semester=semester,
+                is_active=True,  # ✅ Direkt aktif
+            )
+
+            # -----------------------------
+            # DERSİ BÖLÜME EKLE
+            # -----------------------------
+            DepartmentCourse.objects.create(
+                department=department,
+                course=course,
+                semester=semester,
+                is_mandatory=True,
             )
 
             # Önkoşullar
@@ -129,40 +111,13 @@ def create_course(request):
             course.prerequisites.set(prereq_ids)
 
             # -----------------------------
-            # BİLEŞENLERİ KAYDET
-            # -----------------------------
-            counter = 1
-            while True:
-                type_key = f"component_type_{counter}"
-                weight_key = f"component_weight_{counter}"
-
-                if type_key not in request.POST:
-                    break
-
-                component_type = request.POST.get(type_key)
-                comp_weight = int(request.POST.get(weight_key) or 0)
-
-                # 🔥 models.py'deki alan adı "type"
-                CourseAssessmentComponent.objects.create(
-                    course=course,
-                    type=component_type,
-                    weight=comp_weight
-                )
-
-                counter += 1
-
-            # -----------------------------
-            # ÖĞRETMEN ATAMALARI
+            # ÖĞRETMEN ATAMASI
             # -----------------------------
             teacher_ids = request.POST.getlist("teachers")
-
             for t_id in teacher_ids:
                 teacher = Teacher.objects.get(id=t_id)
-
-                # 1) M2M ilişkisini güncelle
                 course.teachers.add(teacher)
 
-                # 2) Opsiyonel: TeacherCourseAssignment tablosuna da kaydet
                 TeacherCourseAssignment.objects.get_or_create(
                     teacher=teacher,
                     course=course,
@@ -173,7 +128,7 @@ def create_course(request):
                     }
                 )
 
-            messages.success(request, "Ders başarıyla oluşturuldu ve onaya gönderildi.")
+            messages.success(request, "Ders başarıyla oluşturuldu ve aktif hale getirildi.")
             return redirect("hod:dashboard")
 
     return render(request, "hod/create_course.html", {
@@ -186,23 +141,77 @@ def create_course(request):
 
 
 
+# ============================================================
+# VAR OLAN DERSİ BÖLÜME EKLEME
+# ============================================================
+def add_existing_course(request):
+    if request.session.get("role") != "HOD":
+        return redirect("login")
 
+    username = request.session.get("username")
+    hod = Head.objects.filter(head_user__username=username, is_active=True).first()
+
+    if not hod:
+        return redirect("hod:dashboard")
+
+    department = hod.department
+    all_courses = Course.objects.filter(is_active=True)
+
+    error = None
+
+    if request.method == "POST":
+        course_id = request.POST.get("course_id")
+        course = get_object_or_404(Course, id=course_id)
+
+        # Zaten o bölümde varsa tekrar eklenmesin
+        if DepartmentCourse.objects.filter(department=department, course=course).exists():
+            error = "Bu ders zaten bölümde mevcut."
+        else:
+            DepartmentCourse.objects.create(
+                department=department,
+                course=course,
+                semester=course.semester,
+                is_mandatory=False,
+            )
+            messages.success(request, "Ders başarıyla bölüme eklendi.")
+            return redirect("hod:dashboard")
+
+    return render(request, "hod/add_existing_course.html", {
+        "department": department,
+        "all_courses": all_courses,
+        "error": error,
+    })
+
+# ============================================================
+# DERS DETAY SAYFASI (Head tarafından görüntülenir)
+# ============================================================
 def course_detail(request, course_id):
-    # 1) DepartmentCourse kaydını ve Course'u çek
+    if request.session.get("role") != "HOD":
+        return redirect("login")
+
+    username = request.session.get("username")
+    hod = Head.objects.filter(
+        head_user__username=username,
+        is_active=True
+    ).select_related("department").first()
+
+    if not hod:
+        return redirect("hod:dashboard")
+
+    # 1) DepartmentCourse kaydını bul
     dept_course = get_object_or_404(
         DepartmentCourse.objects.select_related("course", "department"),
         pk=course_id
     )
     course = dept_course.course
 
-    # 2) Açılmış şubeler
+    # 2) Bu derse bağlı şubeleri getir
     offerings = CourseOffering.objects.filter(course=course)
 
-    # 3) Önkoşul dersler (sadece listelemek için)
+    # 3) Önkoşul dersleri ve mevcut öğretmen atamalarını al
     all_courses = Course.objects.exclude(id=course.id)
     current_prereq_ids = list(course.prerequisites.values_list("id", flat=True))
 
-    # 4) Bu derse atanmış öğretim görevlileri
     assigned_teachers = (
         TeacherCourseAssignment.objects
         .filter(course=course, is_active=True)
@@ -210,20 +219,18 @@ def course_detail(request, course_id):
         .order_by("semester", "teacher__academic_title")
     )
 
-    # ❗ Bu sayfa sadece GÖRÜNTÜLEME, burada POST ile kayıt yok
-    context = {
+    return render(request, "hod/course_detail.html", {
         "dept_course": dept_course,
         "course": course,
         "offerings": offerings,
         "all_courses": all_courses,
         "current_prereq_ids": current_prereq_ids,
         "assigned_teachers": assigned_teachers,
-    }
-    return render(request, "hod/course_detail.html", context)
+    })
 
-
-
-
+# ============================================================
+# DERS DÜZENLEME SAYFASI (Head tarafından)
+# ============================================================
 def course_edit(request, pk):
     if request.session.get("role") != "HOD":
         return redirect("login")
@@ -233,6 +240,9 @@ def course_edit(request, pk):
         head_user__username=username,
         is_active=True
     ).select_related("department").first()
+
+    if not hod:
+        return redirect("hod:dashboard")
 
     dept_course = get_object_or_404(
         DepartmentCourse.objects.select_related("course", "department"),
@@ -275,7 +285,7 @@ def course_edit(request, pk):
         # -----------------------------
         new_ids = set(map(int, request.POST.getlist("teachers")))
 
-        # 1) Assignment tablosu güncelle
+        # 1) TeacherCourseAssignment tablosu güncelle
         TeacherCourseAssignment.objects.filter(course=course).exclude(
             teacher_id__in=new_ids
         ).delete()
@@ -294,6 +304,7 @@ def course_edit(request, pk):
         # 2) M2M güncelle
         course.teachers.set(new_ids)
 
+        messages.success(request, "Ders başarıyla güncellendi.")
         return redirect("hod:course_detail", course_id=dept_course.id)
 
     return render(request, "hod/course_edit.html", {
@@ -308,64 +319,117 @@ def course_edit(request, pk):
         "error": error,
     })
 
+# ============================================================
+# DERS SİLME (Head tarafından)
+# ============================================================
 def delete_course(request, pk):
-    username = request.session.get("username")
-    hod = Head.objects.filter(head_user__username=username).first()
-    if not hod:
-        return redirect("hod:dashboard")
-
-    course = get_object_or_404(DepartmentCourse, pk=pk)
-
-    if course.department != hod.department:
-        return redirect("hod:dashboard")
-
-    course.delete()
-    return redirect("hod:dashboard")
-
-
-def teacher_detail(request, pk):
-    teacher = get_object_or_404(Teacher, pk=pk)
-
-    return render(request, "hod/teacher_detail.html", {
-        "teacher": teacher
-    })
-
-def add_existing_course(request):
     if request.session.get("role") != "HOD":
         return redirect("login")
 
     username = request.session.get("username")
-    hod = Head.objects.filter(head_user__username=username, is_active=True).first()
+    hod = Head.objects.filter(
+        head_user__username=username,
+        is_active=True
+    ).select_related("department").first()
 
     if not hod:
         return redirect("hod:dashboard")
 
-    department = hod.department
-    all_courses = Course.objects.filter(status="APPROVED")
+    dept_course = get_object_or_404(DepartmentCourse, pk=pk)
 
-    error = None
+    # 🔒 Sadece kendi bölümündeki dersi silebilir
+    if dept_course.department != hod.department:
+        messages.warning(request, "Bu ders sizin bölümünüze ait değil.")
+        return redirect("hod:dashboard")
+
+    course = dept_course.course  # Silinecek asıl ders nesnesi
+
+    # -----------------------------
+    # 1️⃣ İlgili öğretmen atamalarını kaldır
+    # -----------------------------
+    TeacherCourseAssignment.objects.filter(course=course).delete()
+
+    # -----------------------------
+    # 2️⃣ M2M (Course.teachers) bağlantısını temizle
+    # -----------------------------
+    course.teachers.clear()
+
+    # -----------------------------
+    # 3️⃣ DepartmentCourse kaydını sil
+    # -----------------------------
+    dept_course.delete()
+
+    messages.success(request, "Ders ve ilgili öğretmen atamaları başarıyla silindi.")
+    return redirect("hod:dashboard")
+
+# ============================================================
+# DERS ŞUBE (OFFERING) EKLEME SAYFASI
+# ============================================================
+def add_offering(request, course_id):
+    if request.session.get("role") != "HOD":
+        return redirect("login")
+
+    username = request.session.get("username")
+    hod = Head.objects.filter(
+        head_user__username=username,
+        is_active=True
+    ).select_related("department").first()
+
+    if not hod:
+        return redirect("hod:dashboard")
+
+    course = get_object_or_404(Course, id=course_id)
 
     if request.method == "POST":
-        course_id = request.POST.get("course_id")
-        course = get_object_or_404(Course, id=course_id)
+        year = request.POST.get("year")
+        semester = request.POST.get("semester")
+        section = request.POST.get("section")
+        max_students = request.POST.get("max_students", 30)
+        location = request.POST.get("location", "")
 
-        # Zaten o bölümde varsa tekrar eklenmesin
-        if DepartmentCourse.objects.filter(department=department, course=course).exists():
-            error = "Bu ders zaten bölümde mevcut."
-        else:
-            # DEAN ONAYI İÇİN PENDING OLARAK İŞARETLİYORUZ
-            DepartmentCourse.objects.create(
-                department=department,
-                course=course,
-                semester=course.semester,
-                is_mandatory=False,
-                approval_status="PENDING"
-            )
-            messages.success(request, "Ders bölüme eklemek için onaya gönderildi.")
-            return redirect("hod:dashboard")
+        CourseOffering.objects.create(
+            course=course,
+            year=year,
+            semester=semester,
+            section=section,
+            max_students=max_students,
+            location=location
+        )
 
-    return render(request, "hod/add_existing_course.html", {
-        "department": department,
-        "all_courses": all_courses,
-        "error": error,
+        messages.success(request, "Yeni ders şubesi başarıyla oluşturuldu.")
+        return redirect("hod:course_detail", course_id=course.id)
+
+    return render(request, "hod/add_offering.html", {
+        "course": course,
+    })
+
+# ============================================================
+# ÖĞRETMEN DETAY SAYFASI (Head tarafından görüntülenir)
+# ============================================================
+def teacher_detail(request, pk):
+    if request.session.get("role") != "HOD":
+        return redirect("login")
+
+    username = request.session.get("username")
+    hod = Head.objects.filter(
+        head_user__username=username,
+        is_active=True
+    ).select_related("department").first()
+
+    if not hod:
+        return redirect("hod:dashboard")
+
+    teacher = get_object_or_404(Teacher, pk=pk, department=hod.department)
+
+    # 🔥 Artık aktif atamaları direkt çekiyoruz
+    assigned_courses = (
+        teacher.assignments
+        .filter(is_active=True)
+        .select_related("course")
+        .order_by("course__name")
+    )
+
+    return render(request, "hod/teacher_detail.html", {
+        "teacher": teacher,
+        "assigned_courses": assigned_courses,
     })
