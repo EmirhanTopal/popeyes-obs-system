@@ -35,7 +35,7 @@
 
     <div class="card shadow-sm">
         <div class="card-header fw-semibold">
-            Ders Bilgilerini Düzenle
+            📝 Ders Bilgilerini Düzenle
         </div>
 
         <div class="card-body">
@@ -49,7 +49,7 @@
 
                 <!-- ========== DERS BİLGİLERİ ========== -->
                 <div class="mb-3">
-                    <div class="section-title">Ders Bilgileri</div>
+                    <div class="section-title">📘 Ders Bilgileri</div>
 
                     <div class="row g-3">
 
@@ -57,7 +57,7 @@
                             <label class="form-label">Ders Kodu</label>
                             <input type="text" class="form-control"
                                    value="{{ course.code }}" disabled>
-                            <div class="form-text">Ders kodu burada sadece görüntülenir.</div>
+                            <div class="form-text">Ders kodu değiştirilemez.</div>
                         </div>
 
                         <div class="col-md-8">
@@ -101,7 +101,6 @@
                                 {% endfor %}
                             </select>
                         </div>
-
                     </div>
                 </div>
 
@@ -109,7 +108,7 @@
 
                 <!-- ========== DÖNEM & ZORUNLULUK ========== -->
                 <div class="mb-3">
-                    <div class="section-title">Dönem ve Zorunluluk</div>
+                    <div class="section-title">📆 Dönem ve Zorunluluk</div>
 
                     <div class="row g-3">
                         <div class="col-md-4">
@@ -141,7 +140,7 @@
 
                 <!-- ========== ÖĞRETİM GÖREVLİLERİ ========== -->
                 <div class="mb-3">
-                    <div class="section-title">Derse Atanan Öğretim Görevlileri</div>
+                    <div class="section-title">👩‍🏫 Derse Atanan Öğretim Görevlileri</div>
 
                     <select name="teachers" class="form-select" multiple size="5">
                         {% for t in teachers %}
@@ -160,7 +159,7 @@
 
                 <!-- ========== ÖNKOŞUL DERSLER ========== -->
                 <div class="mb-3">
-                    <div class="section-title">Önkoşullu Dersler</div>
+                    <div class="section-title">📗 Önkoşullu Dersler</div>
 
                     <select name="prerequisites" class="form-select" multiple size="5">
                         {% for c in all_courses %}
@@ -178,12 +177,13 @@
                 <hr>
 
                 <!-- BUTONLAR -->
-                <button class="btn btn-primary">Kaydet</button>
+                <button class="btn btn-primary">
+                    💾 Kaydet
+                </button>
                 <a href="{% url 'hod:course_detail' dept_course.id %}"
                    class="btn btn-outline-secondary ms-2">
                     İptal
                 </a>
-
             </form>
 
         </div>

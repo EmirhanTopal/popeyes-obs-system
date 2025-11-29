@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import SimpleUser
-from django.db import models
+
 
 class Dean(models.Model):
     user = models.OneToOneField(SimpleUser, on_delete=models.CASCADE)
@@ -10,40 +10,13 @@ class Dean(models.Model):
         on_delete=models.CASCADE,
         related_name='dean_users'
     )
+
     def __str__(self):
         return f"{self.full_name} ({self.faculty.full_name})"
 
-class DepartmentHeadApproval(models.Model):
-    department = models.ForeignKey('departments.Department', on_delete=models.CASCADE)
-    new_head = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE)
-    approved_by = models.ForeignKey('Dean', on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(
-        max_length=20,
-        choices=[
-            ('PENDING', 'Beklemede'),
-            ('APPROVED', 'Onaylandı'),
-            ('REJECTED', 'Reddedildi'),
-        ],
-        default='PENDING'
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
 
-
-class CourseApproval(models.Model):
-    course = models.ForeignKey('courses.Course', on_delete=models.CASCADE)
-    requested_by = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE)
-    approved_by = models.ForeignKey('Dean', on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(
-        max_length=20,
-        choices=[
-            ('PENDING', 'Beklemede'),
-            ('APPROVED', 'Onaylandı'),
-            ('REJECTED', 'Reddedildi'),
-        ],
-        default='PENDING'
-    )
-    reason = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+# ✅ Artık DepartmentHeadApproval ve CourseApproval kaldırıldı
+# Çünkü Dean artık hiçbir onay mekanizmasında yer almayacak.
 
 
 class FacultySettings(models.Model):

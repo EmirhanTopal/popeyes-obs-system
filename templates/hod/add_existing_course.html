@@ -19,12 +19,12 @@
 
 <div class="container" style="max-width: 850px;">
 
-    <!-- Back Button -->
+    <!-- Geri Dön -->
     <a href="{% url 'hod:dashboard' %}" class="btn btn-light btn-sm mb-3">
         ← Geri Dön
     </a>
 
-    <!--------------------- CARD --------------------->
+    <!-- Ana Kart -->
     <div class="card shadow-sm">
         <div class="card-header bg-white fw-semibold fs-5 d-flex align-items-center">
             <span class="header-icon">📘</span> Bölüme Mevcut Ders Ekle
@@ -33,9 +33,10 @@
         <div class="card-body">
 
             <p class="text-muted">
-                Bu sayfadan daha önce oluşturulmuş fakülte / bölüm / havuz derslerinden birini 
-                <b>{{ department.name }}</b> bölümüne ekleyebilirsiniz.
-                İşlem dekan onayından sonra aktif olur.
+                Daha önce oluşturulmuş fakülte, bölüm veya havuz derslerinden birini 
+                <b>{{ department.name }}</b> bölümüne doğrudan ekleyebilirsiniz.
+                <br>
+                Bu işlem onay süreci olmadan hemen aktif hale gelir.
             </p>
 
             {% if error %}
@@ -58,16 +59,14 @@
                     </select>
                 </div>
 
-                <!-- Info Box -->
-                <div class="alert alert-info py-2">
-                    Bu işlem <b>dekan onayına gönderilecektir.</b>
+                <div class="alert alert-success py-2">
+                    ✅ Seçilen ders, bu bölüme eklendikten hemen sonra aktif hale gelecektir.
                 </div>
 
                 <hr>
 
-                <!-- Buttons -->
                 <div class="d-flex">
-                    <button class="btn btn-primary px-4">Onaya Gönder</button>
+                    <button class="btn btn-primary px-4">Dersi Bölüme Ekle</button>
                     <a href="{% url 'hod:dashboard' %}" class="btn btn-outline-secondary ms-2 px-4">İptal</a>
                 </div>
 

@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>{{ course.code }} — Bileşenleri Düzenle</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background:#f5f7fb; }
+    .component-box{background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:16px;margin-bottom:15px;}
+    .lo-box{background:#f9fafc;border:1px dashed #cfd4da;border-radius:6px;padding:10px;margin-top:10px;}
+    .remove-btn{font-size:.8rem}
+    .section-title{font-weight:700;color:#0d6efd}
+  </style>
+</head>
+<body class="py-4">
+<div class="container" style="max-width:900px;">
+
+  <a href="{% url 'teachers:course_management' %}" class="btn btn-outline-secondary btn-sm mb-3">← Ders Listeme Dön</a>
+
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <div class="fw-semibold">{{ course.code }} — {{ course.name }}</div>
+      <small class="text-muted">Değerlendirme Bileşenlerini ve Program Output eşlemelerini yönet</small>
+    </div>
+
+    <div class="card-body">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2">{{ message }}</div>
+      {% endfor %}
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div id="componentContainer">
+          {% for c in components %}
+            <div class="component-box">
+              <input type="hidden" name="component_id_{{ forloop.counter0 }}" value="{{ c.id }}">
+              <div class="row g-2 align-items-center">
+                <div class="col-md-6">
+                  <select name="type[]" class="form-select" required>
+                    <option value="">Bileşen Seç</option>
+                    <option value="MIDTERM" {% if c.type == "MIDTERM" %}selected{% endif %}>Vize</option>
+                    <option value="FINAL" {% if c.type == "FINAL" %}selected{% endif %}>Final</option>
+                    <option value="ASSIGNMENT" {% if c.type == "ASSIGNMENT" %}selected{% endif %}>Ödev</option>
+                    <option value="PROJECT" {% if c.type == "PROJECT" %}selected{% endif %}>Proje</option>
+                    <option value="QUIZ" {% if c.type == "QUIZ" %}selected{% endif %}>Quiz</option>
+                    <option value="ATTENDANCE" {% if c.type == "ATTENDANCE" %}selected{% endif %}>Katılım</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <input type="number" name="weight[]" value="{{ c.weight }}" class="form-control" min="1" max="100" placeholder="Ağırlık (%)" required>
+                </div>
+                <div class="col-md-2 text-end">
+                  <button type="button" class="btn btn-outline-danger btn-sm remove-btn">Sil</button>
+                </div>
+              </div>
+
+              <div class="lo-box">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="m-0 section-title">Learning Outcomes</h6>
+                  <button type="button" class="btn btn-outline-secondary btn-sm add-lo-btn">+ LO Ekle</button>
+                </div>
+
+                <div class="lo-container">
+                  {% with rels=c.learning_relations.all %}
+                    {% for r in rels %}
+                      <div class="row g-2 align-items-center mb-2">
+                        <div class="col-md-7">
+                          <select name="relation_lo_{{ forloop.parentloop.counter0 }}[]" class="form-select" required>
+                            <option value="">Learning Outcome Seç</option>
+                            {% for lo in learning_outcomes %}
+                              <option value="{{ lo.id }}" {% if lo.id == r.learning_outcome_id %}selected{% endif %}>
+                                {{ lo.code }} — {{ lo.description|truncatechars:60 }}
+                              </option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                        <div class="col-md-3">
+                          <input type="number" name="relation_lw_{{ forloop.parentloop.counter0 }}[]" value="{{ r.weight }}" class="form-control" placeholder="%LO" min="0" max="100">
+                        </div>
+                        <div class="col-md-2 text-end">
+                          <button type="button" class="btn btn-outline-danger btn-sm del-row">Sil</button>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  {% endwith %}
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <p class="text-muted">Henüz bileşen eklenmemiş. Yeni bileşen ekleyebilirsin.</p>
+          {% endfor %}
+        </div>
+
+        <button type="button" id="addComponent" class="btn btn-dark btn-sm mb-4">+ Yeni Bileşen Ekle</button>
+
+        <hr class="my-4">
+
+        <!-- =======================
+             PROGRAM OUTPUT HESAPLAMA
+             ======================= -->
+        <div class="mb-2 d-flex justify-content-between align-items-center">
+          <h5 class="section-title m-0">Program Output Hesapla (LO → PO)</h5>
+          <button type="button" id="addPoMap" class="btn btn-outline-primary btn-sm">+ Ekle</button>
+        </div>
+
+        <div id="poMapContainer" class="mb-3">
+          {% for m in lo_po_maps %}
+            <div class="row g-2 align-items-center mb-2">
+              <div class="col-md-5">
+                <select name="po_map_lo[]" class="form-select" required>
+                  <option value="">Learning Outcome Seç</option>
+                  {% for lo in learning_outcomes %}
+                    <option value="{{ lo.id }}" {% if lo.id == m.learning_outcome_id %}selected{% endif %}>
+                      {{ lo.code }} — {{ lo.description|truncatechars:60 }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-2">
+                <input type="number" name="po_map_w[]" value="{{ m.weight }}" class="form-control" placeholder="%LO→PO" min="0" max="100">
+              </div>
+              <div class="col-md-4">
+                <select name="po_map_po[]" class="form-select" required>
+                  <option value="">Program Outcome Seç</option>
+                  {% for po in program_outcomes %}
+                    <option value="{{ po.id }}" {% if po.id == m.program_outcome_id %}selected{% endif %}>
+                      {{ po.code }} — {{ po.description|truncatechars:60 }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-1 text-end">
+                <button type="button" class="btn btn-outline-danger btn-sm del-row">Sil</button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <button class="btn btn-primary w-100 py-2 fw-semibold">💾 Kaydet</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Yeni bileşen ekle
+  document.getElementById("addComponent").addEventListener("click", () => {
+    const container = document.getElementById("componentContainer");
+    const idx = container.querySelectorAll(".component-box").length;
+
+    const div = document.createElement("div");
+    div.className = "component-box";
+    div.innerHTML = `
+      <input type="hidden" name="component_id_${idx}" value="">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-6">
+          <select name="type[]" class="form-select" required>
+            <option value="">Bileşen Seç</option>
+            <option value="MIDTERM">Vize</option>
+            <option value="FINAL">Final</option>
+            <option value="ASSIGNMENT">Ödev</option>
+            <option value="PROJECT">Proje</option>
+            <option value="QUIZ">Quiz</option>
+            <option value="ATTENDANCE">Katılım</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <input type="number" name="weight[]" class="form-control" min="1" max="100" placeholder="Ağırlık (%)" required>
+        </div>
+        <div class="col-md-2 text-end">
+          <button type="button" class="btn btn-outline-danger btn-sm remove-btn">Sil</button>
+        </div>
+      </div>
+      <div class="lo-box mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="m-0 section-title">Learning Outcomes</h6>
+          <button type="button" class="btn btn-outline-secondary btn-sm add-lo-btn">+ LO Ekle</button>
+        </div>
+        <div class="lo-container"></div>
+      </div>`;
+    container.appendChild(div);
+  });
+
+  // LO satırı ekle / sil ve component kaldır
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("add-lo-btn")) {
+      const box = e.target.closest(".component-box");
+      const idx = Array.from(document.querySelectorAll(".component-box")).indexOf(box);
+      const loContainer = box.querySelector(".lo-container");
+
+      const row = document.createElement("div");
+      row.className = "row g-2 align-items-center mb-2";
+      row.innerHTML = `
+        <div class="col-md-7">
+          <select name="relation_lo_${idx}[]" class="form-select" required>
+            <option value="">Learning Outcome Seç</option>
+            {% for lo in learning_outcomes %}
+              <option value="{{ lo.id }}">{{ lo.code }} — {{ lo.description|truncatechars:60 }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <input type="number" name="relation_lw_${idx}[]" class="form-control" placeholder="%LO" min="0" max="100">
+        </div>
+        <div class="col-md-2 text-end">
+          <button type="button" class="btn btn-outline-danger btn-sm del-row">Sil</button>
+        </div>`;
+      loContainer.appendChild(row);
+    }
+
+    if (e.target.classList.contains("remove-btn")) e.target.closest(".component-box").remove();
+    if (e.target.classList.contains("del-row")) e.target.closest(".row").remove();
+  });
+
+  // PO map satırı ekle
+  document.getElementById("addPoMap").addEventListener("click", () => {
+    const wrap = document.getElementById("poMapContainer");
+    const row = document.createElement("div");
+    row.className = "row g-2 align-items-center mb-2";
+    row.innerHTML = `
+      <div class="col-md-5">
+        <select name="po_map_lo[]" class="form-select" required>
+          <option value="">Learning Outcome Seç</option>
+          {% for lo in learning_outcomes %}
+            <option value="{{ lo.id }}">{{ lo.code }} — {{ lo.description|truncatechars:60 }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input type="number" name="po_map_w[]" class="form-control" placeholder="%LO→PO" min="0" max="100">
+      </div>
+      <div class="col-md-4">
+        <select name="po_map_po[]" class="form-select" required>
+          <option value="">Program Outcome Seç</option>
+          {% for po in program_outcomes %}
+            <option value="{{ po.id }}">{{ po.code }} — {{ po.description|truncatechars:60 }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-1 text-end">
+        <button type="button" class="btn btn-outline-danger btn-sm del-row">Sil</button>
+      </div>`;
+    wrap.appendChild(row);
+  });
+</script>
+</body>
+</html>

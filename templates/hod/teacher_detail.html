@@ -7,7 +7,6 @@
 </head>
 
 <body class="bg-light py-4">
-
 <div class="container">
 
     <a href="{% url 'hod:dashboard' %}" class="btn btn-outline-secondary btn-sm mb-3">
@@ -20,7 +19,6 @@
         </div>
 
         <div class="card-body">
-
             <h4>{{ teacher.full_name }}</h4>
             <p class="text-muted mb-4">{{ teacher.get_academic_title_display }}</p>
 
@@ -43,19 +41,22 @@
 
             <h5>Verdiği Dersler</h5>
             <ul class="list-group">
-                {% for assign in teacher.assignments.all %}
-                    <li class="list-group-item">
-                        <strong>{{ assign.course.code }}</strong> — {{ assign.course.name }}
-                        ({{ assign.semester }}. dönem)
+                {% for assign in assigned_courses %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ assign.course.code }}</strong> — {{ assign.course.name }}
+                            <small class="text-muted">({{ assign.semester }}. dönem)</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">
+                            {{ assign.year }}
+                        </span>
                     </li>
                 {% empty %}
                     <li class="list-group-item text-muted">Ders ataması bulunmuyor.</li>
                 {% endfor %}
             </ul>
-
         </div>
     </div>
 </div>
-
 </body>
 </html>

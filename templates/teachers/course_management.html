@@ -5,13 +5,12 @@
     <title>Derslerim</title>
 
     <!-- Bootstrap -->
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
         body { background: #f4f6f9; }
         .card { border-radius: 10px; }
+        .btn-sm { font-size: 0.85rem; }
     </style>
 </head>
 
@@ -20,7 +19,7 @@
 <div class="container">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold">Derslerim</h3>
+        <h3 class="fw-bold text-primary">📘 Derslerim</h3>
         <a href="/logout/" class="btn btn-danger btn-sm">Çıkış</a>
     </div>
 
@@ -31,7 +30,7 @@
                 <div class="card shadow-sm h-100">
                     <div class="card-body">
 
-                        <h5 class="card-title fw-bold">
+                        <h5 class="card-title fw-bold text-dark">
                             {{ course.code }} — {{ course.name }}
                         </h5>
 
@@ -47,15 +46,19 @@
                             <strong>Dönem:</strong> {{ course.semester }}
                         </p>
 
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'teachers:manage_learning_outcomes' course.id %}"
-                               class="btn btn-outline-primary btn-sm">Çıktılar</a>
+                        <div class="d-flex flex-wrap gap-2">
 
-                            <a href="{% url 'teachers:grade_management' course.id %}"
+                            <a href="{% url 'teachers:manage_grades' course.id %}"
                                class="btn btn-outline-success btn-sm">Notlar</a>
+                            
+                            <!-- 🔥 Yeni eklenen buton -->
+                            <a href="{% url 'teachers:manage_components' course.id %}"
+                               class="btn btn-outline-info btn-sm">Bileşenler</a>
+                            
+                            <a href="{% url 'teachers:manage_learning_outcomes' course.id %}" class="btn btn-outline-success btn-sm">
+                                Learning Outcomes
+                            </a>
 
-                            <a href="{% url 'teachers:attendance_management' course.id %}"
-                               class="btn btn-outline-warning btn-sm">Yoklama</a>
                         </div>
 
                     </div>
@@ -65,7 +68,7 @@
         </div>
 
     {% else %}
-        <div class="alert alert-info">
+        <div class="alert alert-info shadow-sm">
             Henüz aktif dersiniz bulunmamaktadır.
         </div>
     {% endif %}

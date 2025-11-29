@@ -3,8 +3,9 @@ from academics.models import Level
 from django.db import models
 from teachers.models import Teacher
 from accounts.models import SimpleUser
-from courses.models import CourseOffering
+from courses.models import Course, CourseOffering
 from django.utils.translation import gettext_lazy as _
+from django.contrib import admin
 
 class Student(models.Model):
     user = models.OneToOneField(SimpleUser, on_delete=models.CASCADE)
@@ -12,7 +13,7 @@ class Student(models.Model):
     student_no = models.CharField(max_length=10, unique=True)
 
     departments = models.ManyToManyField(Department, related_name="students", blank=True)
-
+    courses = models.ManyToManyField(Course, related_name="students", blank=True)
     advisor = models.ForeignKey(
         Teacher,
         on_delete=models.SET_NULL,
@@ -67,4 +68,5 @@ class CourseAttendance(models.Model):
 
     def __str__(self):
         return f"{self.student.full_name} - {self.course.code} ({self.date})"
+
 
