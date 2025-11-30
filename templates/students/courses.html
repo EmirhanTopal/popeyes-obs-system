@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Derslerim{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <button class="btn btn-secondary mb-3" onclick="history.back()">← Geri</button>
+
+    <div class="card shadow-sm p-4">
+        <h3 class="fw-bold mb-3">Derslerim</h3>
+
+        {% if student %}
+
+            {% if student.courses.all %}
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Ders Kodu</th>
+                            <th>Ders Adı</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in student.courses.all %}
+                        <tr>
+                            <td>{{ course.code }}</td>
+                            <td>{{ course.name }}</td>
+                            <td>
+                                {% comment %} İstersen enrollment_type veya başka bir bilgi ekleyebilirsin {% endcomment %}
+                                <td>
+                                    {% for enrollment in course.student_enrollments.all %}
+                                        {% if enrollment.student.id == student.id %}
+                                            {{ enrollment.enrollment_type }}
+                                        {% endif %}
+                                    {% empty %}
+                                        -
+                                    {% endfor %}
+                                </td>
+
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-info">
+                    Henüz kayıtlı dersiniz bulunmamaktadır.
+                </div>
+            {% endif %}
+
+        {% else %}
+            <div class="alert alert-danger">
+                Öğrenci hesabınız bulunamadı.
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

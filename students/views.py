@@ -45,9 +45,7 @@ def profile(request):
     
     try:
         simple_user = SimpleUser.objects.get(username=username)
-        student = Student.objects.filter(
-            full_name=simple_user.get_full_name()
-        ).first()
+        student = Student.objects.filter(user=simple_user).first()
         
         if not student and simple_user.email:
             student = Student.objects.filter(email=simple_user.email).first()
@@ -70,9 +68,7 @@ def courses(request):
     
     try:
         simple_user = SimpleUser.objects.get(username=username)
-        student = Student.objects.filter(
-            full_name=simple_user.get_full_name()
-        ).first()
+        student = Student.objects.filter(user=simple_user).first()
         
     except (SimpleUser.DoesNotExist, Student.DoesNotExist):
         student = None
@@ -92,9 +88,7 @@ def attendance(request):
     
     try:
         simple_user = SimpleUser.objects.get(username=username)
-        student = Student.objects.filter(
-            full_name=simple_user.get_full_name()
-        ).first()
+        student = Student.objects.filter(user=simple_user).first()
         
     except (SimpleUser.DoesNotExist, Student.DoesNotExist):
         student = None
