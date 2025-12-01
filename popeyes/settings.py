@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "grades",
     "courses",
     'outcomes',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [

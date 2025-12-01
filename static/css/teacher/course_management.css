@@ -1,0 +1,111 @@
+/* Genel body ve container */
+.course-container {
+    background: #f4f6f9;
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #333;
+}
+
+/* Kartlar */
+.course-container .card {
+    border-radius: 15px;
+    background-color: #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.course-container .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+/* Card başlıkları */
+.course-container .card-title {
+    font-weight: 700;
+    color: #0d6efd;
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* Küçük metinler */
+.course-container .text-muted {
+    color: #6c757d !important;
+    font-size: 0.9rem;
+}
+
+/* Butonlar */
+.course-container .btn-sm {
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.course-container .btn-outline-success {
+    border: 2px solid #198754;
+    color: #198754;
+}
+
+.course-container .btn-outline-success:hover {
+    background: #198754;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+.course-container .btn-outline-info {
+    border: 2px solid #0dcaf0;
+    color: #0dcaf0;
+}
+
+.course-container .btn-outline-info:hover {
+    background: #0dcaf0;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+/* Alert */
+.course-container .alert {
+    border-radius: 12px;
+    font-size: 0.95rem;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Ders kartları container */
+.course-container .container {
+    max-width: 1200px;
+}
+
+/* Başlık ve header */
+.course-container h3.fw-bold.text-primary {
+    font-weight: 700;
+    color: #0d6efd;
+}
+
+/* Butonlar arası boşluk */
+.course-container .d-flex.flex-wrap.gap-2 > a {
+    flex: 1 1 auto;
+}
+
+/* Fade in animasyonu */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.course-container .card {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .d-flex.flex-wrap.gap-2 > a {
+        flex: 100%;
+    }
+}

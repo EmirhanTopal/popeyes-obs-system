@@ -1,0 +1,61 @@
+.schedule-container {
+    background: #f4f6f9;
+    font-family: "Segoe UI", Arial, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: #333;
+}
+
+/* Kartlar */
+.schedule-container .card {
+    border-radius: 15px;
+    background-color: #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+.schedule-container .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+
+/* Form elemanları */
+.schedule-container .form-control,
+.schedule-container .form-select {
+    border-radius: 8px;
+}
+
+/* Butonlar */
+.schedule-container .btn-primary {
+    background: linear-gradient(45deg, #0d6efd, #0a58ca);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.schedule-container .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+/* Alert */
+.schedule-container .alert {
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Animasyon */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .schedule-container .row > .col-md-6 {
+        flex: 100%;
+    }
+}

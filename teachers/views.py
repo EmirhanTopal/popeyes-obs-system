@@ -133,7 +133,9 @@ def manage_schedule(request):
     if request.session.get("role") != "TEACHER":
         return redirect("login")
 
-    teacher = Teacher.objects.filter(user=request.user).first()
+    username = request.session.get("username")
+
+    teacher = Teacher.objects.filter(user__username=username).first()
 
     if not teacher:
         messages.error(request, "Öğretmen profili bulunamadı.")
@@ -152,7 +154,7 @@ def manage_schedule(request):
     else:
         form = TeacherScheduleForm()
 
-    return render(request, "teachers/schedule.html", {
+    return render(request, "teachers/manage_schedule.html", {
         "teacher": teacher,
         "schedules": schedules,
         "form": form,

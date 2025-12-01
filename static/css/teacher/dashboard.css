@@ -1,0 +1,120 @@
+/* Genel container */
+.teacher-dashboard {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, white, white);
+    min-height: 100vh;
+    margin: 0;
+    padding: 2rem;
+}
+
+/* ---- KARTLAR ---- */
+
+.teacher-dashboard .card {
+    border-radius: 18px;
+    background-color: #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.10);
+    animation: fadeIn 0.4s ease-in-out;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.teacher-dashboard .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.15);
+}
+
+.teacher-dashboard .card-title {
+    font-weight: 700;
+    font-family: "Montserrat", sans-serif;
+}
+
+/* 100'lük renkli kenarlık efektleri */
+.border-left-primary {
+    border-left: 6px solid #0d6efd !important;
+}
+
+.border-left-success {
+    border-left: 6px solid #198754 !important;
+}
+
+.border-left-info {
+    border-left: 6px solid #0dcaf0 !important;
+}
+
+.border-left-warning {
+    border-left: 6px solid #ffc107 !important;
+}
+
+/* Badge */
+.teacher-dashboard .badge {
+    padding: 0.45em 0.75em;
+    font-size: 0.85rem;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* ---- HIZLI ERİŞİM BUTONLARI ---- */
+
+.teacher-dashboard .btn {
+    font-weight: 600;
+    padding: 0.65rem 1rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.teacher-dashboard .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+}
+
+/* Gradient buton örnekleri */
+.teacher-dashboard .btn-primary {
+    background: linear-gradient(45deg, #0d6efd, #3b82f6);
+    border: none;
+}
+
+.teacher-dashboard .btn-success {
+    background: linear-gradient(45deg, #198754, #28a745);
+    border: none;
+}
+
+.teacher-dashboard .btn-info {
+    background: linear-gradient(45deg, #0dcaf0, #31d2f2);
+    border: none;
+}
+
+.teacher-dashboard .btn-warning {
+    background: linear-gradient(45deg, #ffc107, #ffca28);
+    border: none;
+    color: #333;
+}
+
+/* Upcoming events & Active courses list styling */
+.teacher-dashboard .list-item {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.teacher-dashboard h6 {
+    font-weight: 600;
+}
+
+/* Fade-in animasyonu */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .teacher-dashboard {
+        padding: 1rem;
+    }
+}
