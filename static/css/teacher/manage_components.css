@@ -1,0 +1,111 @@
+/* ====== GENEL SAYFA STİLİ ====== */
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.section-title {
+    font-weight: 700;
+    color: #0d6efd;
+}
+
+/* ====== COMPONENT BOX ====== */
+.component-box {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 16px;
+    transition: box-shadow .2s ease;
+}
+
+.component-box:hover {
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+/* ====== LO BOX ====== */
+.lo-box {
+    background: #f9fafc;
+    border: 1px dashed #cfd4da;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+}
+
+.lo-container .row {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 8px;
+}
+
+/* ====== BUTONLAR ====== */
+.btn-outline-danger.btn-sm {
+    border-radius: 6px;
+    padding: 3px 8px;
+}
+
+.btn-outline-secondary.btn-sm,
+.btn-outline-primary.btn-sm,
+.btn-dark.btn-sm {
+    border-radius: 6px;
+}
+
+/* Yeni bileşen ekle butonu */
+#addComponent {
+    border-radius: 6px;
+    transition: background .2s;
+}
+
+#addComponent:hover {
+    opacity: 0.9;
+}
+
+/* Sil butonuna küçük hover efekti */
+.remove-btn:hover,
+.del-row:hover {
+    opacity: .8;
+}
+
+/* ====== PO MAP CONTAINER ====== */
+#poMapContainer .row {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+/* Select ve inputlarda daha hoş görünüm */
+.form-select,
+.form-control {
+    border-radius: 6px;
+    box-shadow: none !important;
+}
+
+.form-select:focus,
+.form-control:focus {
+    border-color: #0d6efd;
+}
+
+
+/* ====== ALERT ====== */
+.alert {
+    border-radius: 6px;
+}
+
+
+/* Mobil görünüm iyileştirmeleri */
+@media (max-width: 768px) {
+    .component-box,
+    .lo-box,
+    #poMapContainer .row {
+        padding: 12px;
+    }
+
+    .remove-btn,
+    .del-row {
+        width: 100%;
+        margin-top: 6px;
+    }
+}

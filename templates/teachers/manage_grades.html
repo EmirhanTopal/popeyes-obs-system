@@ -14,9 +14,12 @@
 
     <div class="card shadow-sm">
 
-        <button class="btn btn-secondary mb-3"
-                style="position:absolute; top:15px; right:15px;"
-                onclick="history.back()">← Ders Listeme Dön</button>
+        <a href="{% url 'teachers:course_management' %}"
+        class="btn btn-outline-secondary btn-sm mb-3"
+        style="position:absolute; top:15px; right:15px;">
+        ← Ders Listeme Dön
+        </a>
+
 
         <div class="card-header fw-semibold">
             🧮 {{ course.code }} — {{ course.name }}
