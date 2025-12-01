@@ -21,26 +21,28 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for course in student.courses.all %}
+                        {% for enrollment in enrollments %}
                         <tr>
-                            <td>{{ course.code }}</td>
-                            <td>{{ course.name }}</td>
-                            <td>
-                                {% comment %} İstersen enrollment_type veya başka bir bilgi ekleyebilirsin {% endcomment %}
-                                <td>
-                                    {% for enrollment in course.student_enrollments.all %}
-                                        {% if enrollment.student.id == student.id %}
-                                            {{ enrollment.enrollment_type }}
-                                        {% endif %}
-                                    {% empty %}
-                                        -
-                                    {% endfor %}
-                                </td>
+                            <!-- Ders kodu -->
+                            <td>{{ enrollment.course.code }}</td>
 
+                            <!-- Ders adı -->
+                            <td>{{ enrollment.course.name }}</td>
+
+                            <!-- Component + Notlar -->
+                            <td>
+                                <ul>
+                                    {% for grade in enrollment.grades.all %}
+                                        <li>{{ grade.component.type }}: {{ grade.score|default:"-" }}</li>
+                                    {% empty %}
+                                        <li>Henüz not girilmedi</li>
+                                    {% endfor %}
+                                </ul>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
+
                 </table>
             {% else %}
                 <div class="alert alert-info">
