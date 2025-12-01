@@ -1,0 +1,113 @@
+/* --- Profil Sayfası Genel Yapı --- */
+.profile-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.profile-container .card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.profile-container .card-header {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 14px 18px;
+}
+
+.profile-container .card .back-btn {
+    position: absolute;
+    top: 10px;
+    left: 15px;
+}
+
+
+
+/* --- Profil Fotoğrafı --- */
+
+.profile-container .teacher-photo {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e5e5e5;
+    transition: 0.3s ease;
+}
+
+.profile-container .teacher-photo:hover {
+    transform: scale(1.04);
+    border-color: #c4c4c4;
+}
+
+/* --- İsim Alanı --- */
+
+.profile-container .teacher-name {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.profile-container .teacher-department {
+    font-size: 1rem;
+    color: #666;
+}
+
+/* --- Badgeler --- */
+
+.profile-container .teacher-badge {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* --- Kart İçerikleri --- */
+
+.profile-container .card-body p {
+    margin-bottom: 8px;
+    font-size: 0.97rem;
+}
+
+.profile-container .card-body strong {
+    color: #222;
+}
+
+.profile-container .text-muted {
+    font-size: 0.9rem;
+}
+
+/* --- Link Listesi --- */
+
+.profile-container .list-group-item {
+    font-size: 0.95rem;
+    padding: 12px 15px;
+}
+
+.profile-container .list-group-item a {
+    color: #0d6efd;
+    text-decoration: none;
+}
+
+.profile-container .list-group-item a:hover {
+    text-decoration: underline;
+}
+
+/* --- Uzmanlık Alanı --- */
+
+.profile-container .expertise-text {
+    font-weight: 400 !important;
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 768px) {
+    .teacher-name {
+        font-size: 1.4rem;
+    }
+    .teacher-photo {
+        width: 120px;
+        height: 120px;
+    }
+}
