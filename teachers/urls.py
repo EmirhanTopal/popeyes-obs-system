@@ -14,6 +14,8 @@ urlpatterns = [
     # Program yönetimi
     path('schedule/', views.manage_schedule, name='manage_schedule'),
     path('office-hours/', views.manage_office_hours, name='manage_office_hours'),
+    path("office_hours/edit/<int:id>/", views.edit_office_hour, name="edit_office_hour"),
+    path("office_hours/delete/<int:id>/", views.delete_office_hour, name="delete_office_hour"),
 
     # Ders yönetimi
     path('courses/', views.course_management, name='course_management'),
