@@ -39,7 +39,12 @@
 
 <main class="container py-4">
   <div class="d-flex align-items-center justify-content-between mb-4">
-    <h2 class="section-title">Dekan Yönetim Paneli</h2>
+    <div class="d-flex align-items-center gap-3">
+      <h2 class="section-title mb-0">Dekan Yönetim Paneli</h2>
+        <a href="{% url 'statistic:dean_stats' %}" class="btn btn-primary btn-sm fw-semibold" title="Fakülte Genel İstatistikleri">
+  📈 İstatistikler
+</a>
+    </div>
     <div class="text-muted">Hoş geldiniz, <strong>{{ username }}</strong></div>
   </div>
 
@@ -49,7 +54,6 @@
     </div>
   {% endif %}
 
-  <!-- PROGRAM OUTCOMES -->
   <div class="card main-card">
     <div class="card-header bg-success text-white fw-semibold">📊 Program Outcomes Yönetimi</div>
     <div class="card-body">
@@ -108,7 +112,6 @@
     </div>
   </div>
 
-  <!-- SOL: Bölümler  — SAĞ: Öğrenci Listesi -->
   <div class="row g-4 mt-1">
     <div class="col-lg-4">
       <div class="card mini-card">

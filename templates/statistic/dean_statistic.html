@@ -1,0 +1,181 @@
+{% extends "statistic/base_statistic.html" %}
+{% block title %} {{ page_title }} {% endblock title %}
+
+{% block stats_content %}
+    <div class="container mt-5">
+        <h1>{{ page_title }}</h1>
+        <p class="lead">Fakülte ve Bölüm Kıyaslama Analizleri</p>
+
+        <hr class="mb-5">
+
+        <div class="row g-4 mb-5">
+
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-primary text-white fw-semibold">
+                        Bölümler Arası Ortalama GPA
+                    </div>
+                    <div class="card-body">
+                        <div style="height: 300px;">
+                            <canvas id="bolumGpaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-success text-white fw-semibold">
+                        Yüksek Devamsızlık Oranı Olan Bölümler (Kıyaslama)
+                    </div>
+                    <div class="card-body d-flex justify-content-center align-items-center">
+                        <div style="width: 70%; max-height: 350px;">
+                            <canvas id="devamsizlikChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white fw-semibold">
+                        Fakülte Dönemlik Başarı Eğilimi
+                    </div>
+                    <div class="card-body">
+                        <div style="width: 90%; margin: auto;">
+                            <canvas id="gpaTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="mt-4">Ham Veriler</h3>
+
+        <h4 class="mt-4">Dönemlik GPA Verileri</h4>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Dönem</th>
+                    <th>Ortalama GPA</th>
+                    <th>Toplam Not Sayısı</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in egilim_tablosu %}
+                <tr>
+                    <td>{{ item.offering__year }}-{{ item.offering__semester }}</td>
+                    <td>{{ item.ortalama_gpa|floatformat:2 }}</td>
+                    <td>{{ item.toplam_ders }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock stats_content %}
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+{% block extra_js %}
+    <script>
+        // Renk paleti
+        const colors = [
+            'rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)',
+            'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)'
+        ];
+
+        // GÜVENLİ JSON PARSE FONKSİYONU: Hata vermeden boş dizi döndürür
+        function safeParse(jsonString) {
+            try {
+                // Eğer string undefined, null veya boşsa, '[]' string'ini parse et
+                return JSON.parse(jsonString || '[]');
+            } catch (e) {
+                console.error("JSON parse hatası: View'dan hatalı veri geldi. Hata:", e);
+                return [];
+            }
+        }
+
+        // ===================================================================
+        // VERİLERİ GÜVENLİ ŞEKİLDE ÇEKME
+        // ===================================================================
+        const bolumLabels = safeParse('{{ bolum_labels|safe }}');
+        const bolumGpaData = safeParse('{{ bolum_gpa_data|safe }}');
+
+        const devamsizlikLabels = safeParse('{{ devamsizlik_labels|safe }}');
+        const devamsizlikData = safeParse('{{ devamsizlik_data|safe }}');
+
+        const trendLabels = safeParse('{{ donem_labels|safe }}');
+        const trendData = safeParse('{{ donem_gpa_data|safe }}');
+
+
+        // ===================================================================
+        // GRAFİK BAŞLATMA KODLARI
+        // ===================================================================
+
+        // 1. DÖNEMLİK GPA EĞİLİMİ
+        if (trendLabels.length > 0) {
+            new Chart(document.getElementById('gpaTrendChart').getContext('2d'), {
+                type: 'line',
+                data: { labels: trendLabels, datasets: [{ label: 'Fakülte Ortalama GPA', data: trendData, borderColor: colors[3], backgroundColor: colors[3].replace('0.7', '0.2'), tension: 0.3, fill: true, }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { min: 0, max: 4.0, title: { display: true, text: 'Ortalama GPA' } } },
+                    plugins: { title: { display: true, text: 'Dönemlik Başarı Eğilimi' } }
+                }
+            });
+        }
+
+        // 2. BÖLÜMLER ARASI BAŞARI ORTALAMASI
+        if (bolumLabels.length > 0) {
+            new Chart(document.getElementById('bolumGpaChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: bolumLabels,
+                    datasets: [{
+                        label: 'Ortalama GPA',
+                        data: bolumGpaData,
+                        backgroundColor: colors.slice(0, bolumLabels.length),
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: { min: 0, max: 4.0, title: { display: true, text: 'Ortalama GPA' } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Bölümlerin Genel Başarı Kıyaslaması' }
+                    }
+                }
+            });
+        }
+
+        // 3. BÖLÜMLER ARASI DEVAMSIZLIK ORANI
+        if (devamsizlikLabels.length > 0) {
+            new Chart(document.getElementById('devamsizlikChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: devamsizlikLabels,
+                    datasets: [{
+                        label: 'Yüksek Devamsızlık Sayısı',
+                        data: devamsizlikData,
+                        backgroundColor: [colors[0], colors[1], colors[2]],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Yüksek Devamsızlık Oranları' }
+                    }
+                }
+            });
+        }
+    </script>
+    {% endblock extra_js %}

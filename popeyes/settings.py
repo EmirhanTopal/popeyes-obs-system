@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "grades",
     "courses",
     'outcomes',
+    "statistic",
 ]
 
 MIDDLEWARE = [
