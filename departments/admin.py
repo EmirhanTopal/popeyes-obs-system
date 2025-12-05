@@ -3,7 +3,7 @@ from .models import Department, DepartmentCourse, DepartmentStatistic
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'faculty', 'quota', 'head_user')
+    list_display = ('code', 'name', 'faculty',)
     search_fields = ('code', 'name')
     list_filter = ('faculty',)
 
