@@ -15,9 +15,6 @@ class Dean(models.Model):
         return f"{self.full_name} ({self.faculty.full_name})"
 
 
-# ✅ Artık DepartmentHeadApproval ve CourseApproval kaldırıldı
-# Çünkü Dean artık hiçbir onay mekanizmasında yer almayacak.
-
 
 class FacultySettings(models.Model):
     faculty = models.OneToOneField('faculty.Faculty', on_delete=models.CASCADE)
