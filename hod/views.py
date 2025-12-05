@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from accounts.models import SimpleUser
+
 from departments.models import DepartmentCourse, DepartmentStatistic
-from teachers.models import Teacher, TeacherSchedule
+from teachers.models import Teacher
 from hod.models import Head
-from courses.models import Course, CourseOffering, CourseAssessmentComponent
+from courses.models import Course, CourseOffering
 from academics.models import Level
 from django.contrib import messages
-from .models import TeacherCourseAssignment, TeacherPerformance
+from .models import TeacherCourseAssignment
 from django.utils import timezone
 
 
@@ -35,7 +35,6 @@ def dashboard(request):
 
     teachers = Teacher.objects.filter(department=department)
 
-    # ✅ Dean onayı kalktığı için pending_course kavramı artık yok
     return render(request, "hod/dashboard.html", {
         "username": username,
         "department": department,
@@ -93,7 +92,7 @@ def create_course(request):
                 course_type=course_type,
                 created_by_head=hod,
                 semester=semester,
-                is_active=True,  # ✅ Direkt aktif
+                is_active=True,
             )
 
             # -----------------------------
@@ -337,7 +336,7 @@ def delete_course(request, pk):
 
     dept_course = get_object_or_404(DepartmentCourse, pk=pk)
 
-    # 🔒 Sadece kendi bölümündeki dersi silebilir
+
     if dept_course.department != hod.department:
         messages.warning(request, "Bu ders sizin bölümünüze ait değil.")
         return redirect("hod:dashboard")
@@ -345,17 +344,17 @@ def delete_course(request, pk):
     course = dept_course.course  # Silinecek asıl ders nesnesi
 
     # -----------------------------
-    # 1️⃣ İlgili öğretmen atamalarını kaldır
+    # İlgili öğretmen atamalarını kaldır
     # -----------------------------
     TeacherCourseAssignment.objects.filter(course=course).delete()
 
     # -----------------------------
-    # 2️⃣ M2M (Course.teachers) bağlantısını temizle
+    # M2M (Course.teachers) bağlantısını temizle
     # -----------------------------
     course.teachers.clear()
 
     # -----------------------------
-    # 3️⃣ DepartmentCourse kaydını sil
+    # DepartmentCourse kaydını sil
     # -----------------------------
     dept_course.delete()
 
@@ -421,7 +420,6 @@ def teacher_detail(request, pk):
 
     teacher = get_object_or_404(Teacher, pk=pk, department=hod.department)
 
-    # 🔥 Artık aktif atamaları direkt çekiyoruz
     assigned_courses = (
         teacher.assignments
         .filter(is_active=True)
