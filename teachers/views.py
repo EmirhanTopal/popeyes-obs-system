@@ -1,9 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
-from django.utils import timezone
-import departments.models
 from accounts.models import SimpleUser
-from django.db.models import Prefetch
 from courses.models import (
     Course,
     CourseAssessmentComponent,
@@ -27,9 +24,6 @@ from outcomes.services import (
     compute_student_program_outcomes, compute_and_save_student_program_outcomes
 )
 
-# ===============================================================
-#  ÖĞRETMEN DASHBOARD
-# ===============================================================
 def teacher_dashboard(request):
 
     if request.session.get("role") != "TEACHER":
@@ -43,20 +37,16 @@ def teacher_dashboard(request):
         messages.error(request, "Öğretmen profili bulunamadı.")
         return redirect("login")
 
-    # 🔥 ÖNEMLİ: Öğretmene atanan dersler (ManyToMany)
     active_courses = teacher.courses.all()
 
-
-    # Yaklaşan programlar
     upcoming_schedules = teacher.schedules.all().order_by("day_of_week", "start_time")[:5]
 
-    # Aktif ofis saatleri
     active_office_hours = teacher.office_hours.filter(is_active=True)
 
     context = {
         "teacher": teacher,
         "active_courses": active_courses,
-        "total_students": 0,  # İstersen burada kayıtlı öğrencileri saydırırım
+        "total_students": 0,
         "upcoming_schedules": upcoming_schedules,
         "active_office_hours": active_office_hours,
     }
@@ -64,10 +54,6 @@ def teacher_dashboard(request):
     return render(request, "teachers/dashboard.html", context)
 
 
-
-# ===============================================================
-#  PROFİL
-# ===============================================================
 def teacher_profile(request):
 
     if request.session.get("role") != "TEACHER":
@@ -94,10 +80,6 @@ def teacher_profile(request):
     })
 
 
-
-# ===============================================================
-#  İLETİŞİM BİLGİSİ GÜNCELLEME
-# ===============================================================
 def update_contact_info(request):
 
     if request.session.get("role") != "TEACHER":
@@ -124,10 +106,6 @@ def update_contact_info(request):
     })
 
 
-
-# ===============================================================
-#  PROGRAM (SCHEDULE)
-# ===============================================================
 def manage_schedule(request):
 
     if request.session.get("role") != "TEACHER":
@@ -158,11 +136,6 @@ def manage_schedule(request):
         "form": form,
     })
 
-
-
-# ===============================================================
-#  OFİS SAATLERİ
-# ===============================================================
 def manage_office_hours(request):
 
     if request.session.get("role") != "TEACHER":
@@ -194,10 +167,6 @@ def manage_office_hours(request):
     })
 
 
-
-# ===============================================================
-#  DERLERİM
-# ===============================================================
 def course_management(request):
 
     if request.session.get("role") != "TEACHER":
@@ -228,11 +197,6 @@ def course_management(request):
     })
 
 
-
-
-# ===============================================================
-#  DERS ÇIKTILARI
-# ===============================================================
 def manage_learning_outcomes(request, course_id):
 
     if request.session.get("role") != "TEACHER":
@@ -269,9 +233,6 @@ def manage_learning_outcomes(request, course_id):
         "form": form,
     })
 
-# ===============================================================
-#  YOKLAMA
-# ===============================================================
 def attendance_management(request, course_id):
 
     if request.session.get("role") != "TEACHER":
@@ -367,7 +328,6 @@ def manage_components(request, course_id):
                         weight=float(lw or 0.0),
                     )
 
-        # Artık kullanılmayan component’leri temizle
         CourseAssessmentComponent.objects.filter(course=course).exclude(id__in=used_components).delete()
 
         # ===========================================
@@ -377,7 +337,6 @@ def manage_components(request, course_id):
         map_ws = request.POST.getlist("po_map_w[]")
         map_pos = request.POST.getlist("po_map_po[]")
 
-        # Önce mevcutları temizle
         LearningProgramRelation.objects.filter(learning_outcome__course=course).delete()
 
         seen = set()
@@ -444,10 +403,6 @@ def manage_learning_outcomes(request, course_id):
         "outcomes": outcomes,
     })
 
-# ===============================================================
-#  NOT GİRİŞİ (ÖĞRETMEN)
-# ===============================================================
-from django.db.models import Prefetch
 
 
 def manage_grades(request, course_id):
@@ -479,7 +434,6 @@ def manage_grades(request, course_id):
         student__courses=course
     ).select_related("student")
 
-    # POST: Not kaydet
     if request.method == "POST":
         for enrollment in enrollments:
             for comp in components:
@@ -494,13 +448,11 @@ def manage_grades(request, course_id):
                     grade.score = score
                     grade.save()
 
-        # 🔹 Notlar kaydedildikten sonra LO ve PO skorlarını yeniden hesapla
         for enrollment in enrollments:
             compute_and_save_student_program_outcomes(enrollment.student)
 
         messages.success(request, "Notlar kaydedildi ve Outcome skorları güncellendi ✅")
 
-    # 🧩 Notları sözlüğe al
     grades = CourseGrade.objects.filter(enrollment__course=course)
     grade_map = {(int(g.enrollment_id), int(g.component_id)): float(g.score) for g in grades}
 

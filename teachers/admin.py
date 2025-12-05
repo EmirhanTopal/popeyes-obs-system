@@ -33,7 +33,6 @@ class TeacherAdmin(admin.ModelAdmin):
         "academic_title",
         "department",
         "teacher_type",
-        "employee_id",
         "is_active",
         "created_at",
     )
@@ -49,7 +48,6 @@ class TeacherAdmin(admin.ModelAdmin):
         "user__username",
         "user__first_name",
         "user__last_name",
-        "employee_id",
         "department__name",
     )
 
@@ -60,7 +58,7 @@ class TeacherAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("Kimlik Bilgileri", {
-            "fields": ("user", "employee_id", "department", "teacher_type", "academic_title")
+            "fields": ("user", "department", "teacher_type", "academic_title")
         }),
         ("Uzmanlık ve Ofis Bilgileri", {
             "fields": ("expertise_area", "office_location", "office_phone")
