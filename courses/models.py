@@ -6,9 +6,6 @@ from accounts.models import SimpleUser
 from academics.models import Level
 from outcomes.models import LearningOutcome
 
-# ============================================================
-# COURSE MODEL
-# ============================================================
 class Course(models.Model):
     COURSE_TYPE_CHOICES = [
         ("POOL", "Havuz Dersi"),
@@ -37,13 +34,6 @@ class Course(models.Model):
 
     semester = models.PositiveSmallIntegerField(default=1, verbose_name="Dönem")
 
-    # Head hangi bölüm için oluşturmuş?
-    created_by_head = models.ForeignKey(
-        "hod.Head",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
 
     # Öğretmen – Ders ilişkisi
     teachers = models.ManyToManyField(
@@ -67,7 +57,6 @@ class Course(models.Model):
     def clean(self):
         super().clean()
 
-        # Kendini kendine önkoşul yapma
         if self.pk and self.prerequisites.filter(pk=self.pk).exists():
             raise ValidationError(_("Bir ders kendisini önkoşul olarak içeremez."))
 
@@ -92,9 +81,6 @@ class CourseGrade(models.Model):
     def __str__(self):
         return f"{self.enrollment.student} - {self.component.type} - {self.score}"
 
-# ============================================================
-# COURSE COMPONENTS
-# ============================================================
 class CourseAssessmentComponent(models.Model):
     COMPONENT_TYPES = [
         ("MIDTERM", "Vize"),
@@ -121,9 +107,6 @@ class CourseAssessmentComponent(models.Model):
         return f"{self.course.code} - {self.get_type_display()} (%{self.weight})"
 
 
-# ============================================================
-# COURSE OFFERING (Şube)
-# ============================================================
 class CourseOffering(models.Model):
     SEMESTER_CHOICES = [
         ("SPRING", "Bahar"),
@@ -171,9 +154,6 @@ class CourseOffering(models.Model):
             )
 
 
-# ============================================================
-# COURSE SCHEDULE
-# ============================================================
 class DayOfWeek(models.TextChoices):
     MON = "MON", _("Pazartesi")
     TUE = "TUE", _("Salı")
@@ -208,9 +188,6 @@ class CourseSchedule(models.Model):
         return f"{self.get_day_display()} {self.start_time} - {self.end_time}"
 
 
-# ============================================================
-# COURSE CONTENT
-# ============================================================
 class CourseContent(models.Model):
     offering = models.ForeignKey(
         CourseOffering,
@@ -231,9 +208,6 @@ class CourseContent(models.Model):
         return f"{self.offering.course.code} - {self.title}"
 
 
-# ============================================================
-# ENROLLMENT
-# ============================================================
 class Enrollment(models.Model):
     class Status(models.TextChoices):
         ENROLLED = "ENROLLED", _("Kayıtlı")
@@ -274,9 +248,6 @@ class Enrollment(models.Model):
         return f"{self.student} -> {self.offering} ({self.get_status_display()})"
 
 
-# ============================================================
-# COURSE ATTENDANCE
-# ============================================================
 class CourseAttendance(models.Model):
     enrollment = models.ForeignKey(
         Enrollment,
@@ -302,9 +273,6 @@ class CourseAttendance(models.Model):
 
 
 
-# ============================================================
-# COMPONENT ↔ LEARNING OUTCOME İLİŞKİSİ
-# ============================================================
 class ComponentLearningRelation(models.Model):
     component = models.ForeignKey(
         CourseAssessmentComponent,
@@ -322,14 +290,6 @@ class ComponentLearningRelation(models.Model):
         return f"{self.component} → {self.learning_outcome} (%{self.weight})"
 
 
-# ============================================================
-# LEARNING OUTCOME ↔ PROGRAM OUTCOME İLİŞKİSİ
-# ============================================================
-
-
-# ============================================================
-# COMPONENT – LEARNING OUTCOME – PROGRAM OUTCOME RELATION
-# ============================================================
 class ComponentLearningProgramRelation(models.Model):
     component = models.ForeignKey(
         "courses.CourseAssessmentComponent",
