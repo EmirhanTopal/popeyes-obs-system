@@ -1,0 +1,110 @@
+/* Genel container */
+.container {
+    background: #f7f9fc;
+    padding: 2rem 1rem;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* Kart */
+.card {
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Card header */
+.card-header {
+    font-weight: 600;
+    font-size: 1.1rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* Table */
+table {
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+th {
+    background-color: #f1f3f6;
+    font-weight: 600;
+    color: #495057;
+}
+
+td input.form-control {
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+td input.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 5px rgba(13,110,253,0.3);
+}
+
+/* Alert mesajları */
+.alert {
+    border-radius: 10px;
+    font-size: 0.95rem;
+    padding: 0.8rem 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Buttons */
+.btn-outline-secondary {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.btn-primary {
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+}
+
+/* Responsive ayarlar */
+@media (max-width: 768px) {
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    thead tr {
+        display: none;
+    }
+
+    td {
+        position: relative;
+        padding-left: 50%;
+        margin-bottom: 1rem;
+    }
+
+    td::before {
+        position: absolute;
+        top: 0;
+        left: 1rem;
+        width: 45%;
+        padding-right: 1rem;
+        white-space: nowrap;
+        font-weight: 600;
+        content: attr(data-label);
+        color: #495057;
+    }
+
+    td input.form-control {
+        width: 100%;
+    }
+}

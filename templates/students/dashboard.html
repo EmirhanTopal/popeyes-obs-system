@@ -1,44 +1,32 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Öğrenci Paneli{% endblock %}
+
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/student/dashboard.css' %}">
+{% endblock %}
+
 
 {% block content %}
 <div class="container mt-4">
 
-    <div class="card shadow-sm p-4">
-        <h3 class="fw-bold mb-3">Öğrenci Paneli</h3>
+    <div class="student-dashboard">
+        <div class="card shadow-sm p-4">
+            <h3 class="fw-bold mb-3">Öğrenci Paneli</h3>
 
-        {% if student %}
-            <div class="mb-3">
-                <p><strong>Ad Soyad:</strong> {{ student.full_name }}</p>
-                <p><strong>Öğrenci No:</strong> {{ student.student_no }}</p>
-                <p><strong>Email:</strong> {{ student.email }}</p>
-
-                <p><strong>Bölüm(ler):</strong>
-                    {% for d in student.departments.all %}
-                        <span class="badge text-bg-primary">{{ d.name }}</span>
-                    {% empty %}
-                        <span class="text-muted">Kayıtlı bölüm yok.</span>
-                    {% endfor %}
-                </p>
-
-                <p><strong>Seviye:</strong> 
-                    {{ student.student_level.name|default:"-" }}
-                </p>
-
-                <p><strong>Danışman:</strong>
-                    {{ student.advisor.full_name|default:"-" }}
-                </p>
-            </div>
-
-            <a href="{% url 'students:courses' %}" class="btn btn-primary btn-sm">Derslerim</a>
-            <a href="{% url 'students:attendance' %}" class="btn btn-warning btn-sm">Devamsızlık</a>
-            <a href="{% url 'students:profile' %}" class="btn btn-outline-secondary btn-sm">Profil</a>
-
-        {% else %}
-            <div class="alert alert-danger">
-                Öğrenci bilgileriniz bulunamadı.
-            </div>
-        {% endif %}
+            {% if student %}
+                <div class="button-group mt-3">
+                    <a href="{% url 'students:profile' %}" class="btn btn-card btn-outline-secondary">Profil</a>
+                    <a href="{% url 'students:courses' %}" class="btn btn-card btn-primary">Derslerim</a>
+                    <a href="{% url 'students:attendance' %}" class="btn btn-card btn-warning">Devamsızlık</a>
+                </div>
+            {% else %}
+                <div class="alert alert-danger">
+                    Öğrenci bilgileriniz bulunamadı.
+                </div>
+            {% endif %}
+        </div>
     </div>
 
 </div>

@@ -1,26 +1,36 @@
-<!doctype html>
-<html lang="tr">
-<head>
-  <meta charset="utf-8">
-  <title>{{ course.code }} — Bileşenleri Düzenle</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { background:#f5f7fb; }
-    .component-box{background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:16px;margin-bottom:15px;}
-    .lo-box{background:#f9fafc;border:1px dashed #cfd4da;border-radius:6px;padding:10px;margin-top:10px;}
-    .remove-btn{font-size:.8rem}
-    .section-title{font-weight:700;color:#0d6efd}
-  </style>
-</head>
-<body class="py-4">
-<div class="container" style="max-width:900px;">
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% load static %}
+{% load custom_tags %}
 
-  <a href="{% url 'teachers:course_management' %}" class="btn btn-outline-secondary btn-sm mb-3">← Ders Listeme Dön</a>
+{% block title %}{{ course.code }} — Not Girişi{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/teacher/manage_components.css' %}">
+<style>
+  body { background:#f5f7fb; }
+  .component-box{background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:16px;margin-bottom:15px;}
+  .lo-box{background:#f9fafc;border:1px dashed #cfd4da;border-radius:6px;padding:10px;margin-top:10px;}
+  .remove-btn{font-size:.8rem}
+  .section-title{font-weight:700;color:#0d6efd}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-4" style="max-width:900px;">
 
   <div class="card shadow-sm">
     <div class="card-header">
       <div class="fw-semibold">{{ course.code }} — {{ course.name }}</div>
       <small class="text-muted">Değerlendirme Bileşenlerini ve Program Output eşlemelerini yönet</small>
+    
+      <a href="{% url 'teachers:course_management' %}"
+        class="btn btn-outline-secondary btn-sm mb-3"
+        style="position:absolute; top:15px; right:15px;">
+        ← Ders Listeme Dön
+      </a>
+
     </div>
 
     <div class="card-body">
@@ -96,9 +106,7 @@
 
         <hr class="my-4">
 
-        <!-- =======================
-             PROGRAM OUTPUT HESAPLAMA
-             ======================= -->
+        <!-- PROGRAM OUTPUT HESAPLAMA -->
         <div class="mb-2 d-flex justify-content-between align-items-center">
           <h5 class="section-title m-0">Program Output Hesapla (LO → PO)</h5>
           <button type="button" id="addPoMap" class="btn btn-outline-primary btn-sm">+ Ekle</button>
@@ -172,6 +180,7 @@
           <button type="button" class="btn btn-outline-danger btn-sm remove-btn">Sil</button>
         </div>
       </div>
+
       <div class="lo-box mt-3">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <h6 class="m-0 section-title">Learning Outcomes</h6>
@@ -182,7 +191,7 @@
     container.appendChild(div);
   });
 
-  // LO satırı ekle / sil ve component kaldır
+  // LO satırı ekleme/silme & component silme
   document.addEventListener("click", (e) => {
     if (e.target.classList.contains("add-lo-btn")) {
       const box = e.target.closest(".component-box");
@@ -209,11 +218,14 @@
       loContainer.appendChild(row);
     }
 
-    if (e.target.classList.contains("remove-btn")) e.target.closest(".component-box").remove();
-    if (e.target.classList.contains("del-row")) e.target.closest(".row").remove();
+    if (e.target.classList.contains("remove-btn"))
+      e.target.closest(".component-box").remove();
+
+    if (e.target.classList.contains("del-row"))
+      e.target.closest(".row").remove();
   });
 
-  // PO map satırı ekle
+  // PO map satırı ekleme
   document.getElementById("addPoMap").addEventListener("click", () => {
     const wrap = document.getElementById("poMapContainer");
     const row = document.createElement("div");
@@ -244,5 +256,5 @@
     wrap.appendChild(row);
   });
 </script>
-</body>
-</html>
+
+{% endblock %}

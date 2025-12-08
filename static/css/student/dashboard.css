@@ -1,0 +1,139 @@
+/* Genel container */
+.student-dashboard {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, white, white);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem 0;
+}
+
+/* Kart */
+.student-dashboard .card {
+    border-radius: 20px;
+    padding: 2.5rem;
+    background-color: #ffffff;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+    animation: fadeIn 0.5s ease-in-out;
+    width: 100%;
+    max-width: 450px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.student-dashboard .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.15);
+}
+
+.student-dashboard .card h3 {
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* Paragraflar */
+.student-dashboard .card p {
+    font-size: 15px;
+    color: #555;
+    margin-bottom: 0.8rem;
+}
+
+/* Badge */
+.student-dashboard .badge {
+    font-size: 0.85rem;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    padding: 0.4em 0.7em;
+    border-radius: 12px;
+    background-color: #d1e7ff;
+    color: #0d6efd;
+}
+
+/* Butonlar */
+.student-dashboard .button-group {
+    display: flex;
+    flex-direction: column; /* Dikey yerleşim */
+    gap: 1rem; /* Butonlar arası boşluk */
+    align-items: center; /* Ortala */
+    margin-top: 1.5rem;
+}
+
+.student-dashboard .btn-card {
+    width: 100%;
+    max-width: 240px; /* Sabit maksimum genişlik */
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 12px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+/* Renk ve hover efektleri */
+.student-dashboard .btn-primary {
+    background: linear-gradient(45deg, #ff6600, #ff8533);
+    border: none;
+    color: #fff;
+}
+
+.student-dashboard .btn-primary:hover {
+    background: linear-gradient(45deg, #e65c00, #ff7300);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.student-dashboard .btn-warning {
+    background: linear-gradient(45deg, #ffc107, #ffd54f);
+    border: none;
+    color: #333;
+}
+
+.student-dashboard .btn-warning:hover {
+    background: linear-gradient(45deg, #ffb300, #ffca28);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.student-dashboard .btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background-color: transparent;
+}
+
+.student-dashboard .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+.student-dashboard .alert {
+    border-radius: 12px;
+    font-size: 14px;
+    padding: 0.8rem 1rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 480px) {
+    .student-dashboard .card {
+        padding: 1.5rem;
+    }
+    .student-dashboard .btn-card {
+        max-width: 100%;
+    }
+}

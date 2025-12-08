@@ -1,0 +1,135 @@
+/* === ROOT SETTINGS === */
+.hod-dashboard {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, white, white);
+    padding: 1.5rem 0;
+}
+
+/* PAGE HEADER */
+.hod-dashboard h3 {
+    font-weight: 700;
+    font-family: "Montserrat", sans-serif;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+.hod-dashboard .welcome-text {
+    font-weight: 700;
+    font-family: "Montserrat", sans-serif;
+    animation: fadeIn 0.4s ease-in-out;
+    margin-right: 20px;
+}
+
+
+/* ==== CARD GENERIC ==== */
+.hod-dashboard .card {
+    border-radius: 18px;
+    background: #ffffff;
+    border: none;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.10);
+    transition: 0.3s ease;
+    animation: fadeIn 0.35s ease;
+}
+
+.hod-dashboard .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+/* CARD HEADERS */
+.hod-dashboard .card-header {
+    background: rgba(0, 0, 0, 0.03);
+    border-bottom: none;
+    padding: 1rem 1.2rem;
+    font-weight: 600;
+}
+
+/* BADGE */
+.hod-dashboard .badge {
+    padding: 0.55em 0.85em;
+    font-size: 0.85rem;
+    border-radius: 8px;
+}
+
+/* ==== STATS CARDS ==== */
+
+.stat-card {
+    padding: 1.3rem;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: 0.3s ease;
+    animation: fadeIn 0.4s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0d6efd;
+}
+
+.stat-label {
+    font-size: 0.95rem;
+    color: #555;
+    margin-top: 4px;
+}
+
+/* ==== BUTTONS ==== */
+
+.hod-dashboard .btn {
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.65rem 1rem;
+    transition: 0.25s;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+.hod-dashboard .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+}
+
+.hod-dashboard .btn-primary {
+    background: linear-gradient(45deg, #0d6efd, #3b82f6);
+    border: none;
+}
+
+.hod-dashboard .btn-outline-primary:hover {
+    background: #0d6efd;
+    color: white;
+}
+
+/* TABLES */
+.hod-dashboard table {
+    font-size: 0.92rem;
+}
+
+.hod-dashboard thead {
+    font-weight: 600;
+}
+
+.hod-dashboard tbody tr:hover {
+    background: #f5f9ff !important;
+}
+
+/* TABLE ACTION BUTTONS */
+.hod-dashboard .table .btn-sm {
+    padding: 0.35rem 0.55rem;
+    border-radius: 8px;
+}
+
+/* FADE-IN ANIMATION */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .stat-card { margin-bottom: 1rem; }
+}

@@ -1,0 +1,128 @@
+/* ---------- Office Hours Container ---------- */
+.hours-container {
+    background: #f4f6f9;
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #333;
+    padding: 2rem;
+    border-radius: 15px;
+}
+
+/* ---------- Kartlar ---------- */
+.hours-container .card {
+    border-radius: 15px;
+    background-color: #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.hours-container .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+/* Card başlıkları */
+.hours-container .card-header {
+    font-weight: 700;
+    color: #0d6efd;
+    font-size: 1.1rem;
+}
+
+/* Form alanları */
+.hours-container .form-label {
+    font-weight: 500;
+}
+
+.hours-container .form-control,
+.hours-container .form-select {
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ced4da;
+    transition: all 0.2s ease;
+}
+
+.hours-container .form-control:focus,
+.hours-container .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* ---------- Butonlar ---------- */
+.hours-container .btn {
+    border-radius: 8px;
+    padding: 0.5rem 1.2rem;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.hours-container .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+}
+
+.hours-container .btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0b5ed7;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+/* ---------- Ofis Saatleri Listesi ---------- */
+.hours-container .list-group {
+    margin-top: 1rem;
+}
+
+.hours-container .list-group-item {
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.hours-container .list-group-item:hover {
+    background-color: #e0f2f1;
+}
+
+/* Badge veya küçük bilgiler */
+.hours-container .badge {
+    font-size: 0.75rem;
+}
+
+/* Alert mesajları */
+.hours-container .alert {
+    border-radius: 12px;
+    font-size: 0.95rem;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Fade in animasyonu */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hours-container .card {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hours-container .row > div {
+        flex: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .hours-container .btn {
+        width: 100%;
+    }
+}

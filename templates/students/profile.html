@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Profil{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <button class="btn btn-secondary mb-3" onclick="history.back()">← Geri</button>
+
+    <div class="card shadow-sm p-4">
+        <h3 class="fw-bold mb-3">Öğrenci Profili</h3>
+
+        {% if student %}
+            <div class="row mb-3">
+                <div class="col-md-4 text-center">
+                    {% if student.profile_photo %}
+                    <img src="{{ student.profile_photo.url }}" alt="Profil Resmi" class="img-fluid rounded-circle mb-2" style="max-width:150px; margin-top:30px;">
+                    {% else %}
+                    <img src="{% static 'img/anonim.jpg' %}" alt="Varsayılan Profil Resmi" class="img-fluid rounded-circle mb-2" style="max-width:150px; margin-top:30px;">
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <table class="table table-borderless">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Ad Soyad</th>
+                                <td>{{ student.user.get_full_name }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Öğrenci Numarası</th>
+                                <td>{{ student.student_no }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Email</th>
+                                <td>{{ student.user.email }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Bölüm(ler)</th>
+                                <td>
+                                    {% for dept in student.departments.all %}
+                                        {{ dept.name }}{% if not forloop.last %}, {% endif %}
+                                    {% empty %}
+                                        -
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Danışman</th>
+                                <td>
+                                    {% if student.advisor %}
+                                        {{ student.advisor.user.get_full_name }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Seviye</th>
+                                <td>
+                                    {% if student.student_level %}
+                                        {{ student.student_level.name }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-danger">
+                Öğrenci hesabınız bulunamadı.
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

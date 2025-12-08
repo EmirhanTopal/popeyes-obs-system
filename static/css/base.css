@@ -1,0 +1,12 @@
+    body { background-color: #f8f9fa; font-family: 'Montserrat', sans-serif; }
+    .header {
+      background-color: #004085;
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    }
+    .uni-name { font-size: 20px; font-weight: 600; }
+    .content { padding: 24px; }

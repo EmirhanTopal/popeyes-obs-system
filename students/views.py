@@ -2,6 +2,7 @@
 from django.shortcuts import render, get_object_or_404
 from accounts.decorators import require_role
 from .models import Student
+from courses.models import CourseEnrollment
 from accounts.models import SimpleUser
 from django.shortcuts import redirect
 
@@ -43,9 +44,7 @@ def profile(request):
     
     try:
         simple_user = SimpleUser.objects.get(username=username)
-        student = Student.objects.filter(
-            full_name=simple_user.get_full_name()
-        ).first()
+        student = Student.objects.filter(user=simple_user).first()
         
         if not student and simple_user.email:
             student = Student.objects.filter(email=simple_user.email).first()
@@ -65,20 +64,32 @@ def courses(request):
     
     if not username:
         return render(request, "students/courses.html", {'student': None})
-    
+
     try:
         simple_user = SimpleUser.objects.get(username=username)
-        student = Student.objects.filter(
-            full_name=simple_user.get_full_name()
-        ).first()
-        
+        student = Student.objects.filter(user=simple_user).first()
+
     except (SimpleUser.DoesNotExist, Student.DoesNotExist):
         student = None
-    
+
+    # Eğer öğrenci bulunduysa ilgili ders, not ve component bilgilerini çek
+    enrollments = None
+    if student:
+        enrollments = (
+            student.course_enrollments
+            .select_related("course")
+            .prefetch_related(
+                "grades__component"     # Grade içindeki component bilgilerini getirir
+            )
+        )
+
     context = {
         'student': student,
+        'enrollments': enrollments,
     }
+
     return render(request, 'students/courses.html', context)
+
 
 @require_role("STUDENT")
 def attendance(request):
@@ -90,9 +101,7 @@ def attendance(request):
     
     try:
         simple_user = SimpleUser.objects.get(username=username)
-        student = Student.objects.filter(
-            full_name=simple_user.get_full_name()
-        ).first()
+        student = Student.objects.filter(user=simple_user).first()
         
     except (SimpleUser.DoesNotExist, Student.DoesNotExist):
         student = None

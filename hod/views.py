@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from departments.models import DepartmentCourse, DepartmentStatistic
 from teachers.models import Teacher
 from hod.models import Head
+from students.models import Student
+from courses.models import Course, CourseOffering, CourseAssessmentComponent
 from courses.models import Course, CourseOffering
 from academics.models import Level
 from django.contrib import messages
@@ -33,7 +35,20 @@ def dashboard(request):
         department=department
     ).select_related("course")
 
+    course_list = dept_courses.values_list("course", flat=True)
+
+
     teachers = Teacher.objects.filter(department=department)
+    teacher_count = teachers.count()
+
+
+    student_count = (
+    Student.objects
+    .filter(courses__in=course_list)
+    .distinct()
+    .count()
+)
+
 
     return render(request, "hod/dashboard.html", {
         "username": username,
@@ -41,6 +56,8 @@ def dashboard(request):
         "stats": stats,
         "dept_courses": dept_courses,
         "teachers": teachers,
+        "teacher_count": teacher_count,
+        "student_count": student_count,
     })
 
 

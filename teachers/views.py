@@ -11,6 +11,7 @@ from courses.models import (
     CourseGrade
 )
 from outcomes.models import ProgramOutcome, LearningOutcome
+from students.models import Student
 from .models import Teacher, TeacherSchedule, OfficeHour
 from .forms import (
     TeacherProfileForm,
@@ -39,6 +40,14 @@ def teacher_dashboard(request):
 
     active_courses = teacher.courses.all()
 
+    total_students = (
+    Student.objects
+    .filter(courses__in=active_courses)
+    .distinct()
+    .count()
+)
+
+    # Yaklaşan programlar
     upcoming_schedules = teacher.schedules.all().order_by("day_of_week", "start_time")[:5]
 
     active_office_hours = teacher.office_hours.filter(is_active=True)
@@ -46,7 +55,7 @@ def teacher_dashboard(request):
     context = {
         "teacher": teacher,
         "active_courses": active_courses,
-        "total_students": 0,
+        "total_students": total_students,
         "upcoming_schedules": upcoming_schedules,
         "active_office_hours": active_office_hours,
     }
@@ -59,7 +68,9 @@ def teacher_profile(request):
     if request.session.get("role") != "TEACHER":
         return redirect("login")
 
-    teacher = Teacher.objects.filter(user=request.user).first()
+    username = request.session.get("username")
+
+    teacher = Teacher.objects.filter(user__username=username).first()
 
     if not teacher:
         messages.error(request, "Öğretmen profili bulunamadı.")
@@ -111,7 +122,9 @@ def manage_schedule(request):
     if request.session.get("role") != "TEACHER":
         return redirect("login")
 
-    teacher = Teacher.objects.filter(user=request.user).first()
+    username = request.session.get("username")
+
+    teacher = Teacher.objects.filter(user__username=username).first()
 
     if not teacher:
         messages.error(request, "Öğretmen profili bulunamadı.")
@@ -130,18 +143,72 @@ def manage_schedule(request):
     else:
         form = TeacherScheduleForm()
 
-    return render(request, "teachers/schedule.html", {
+    return render(request, "teachers/manage_schedule.html", {
         "teacher": teacher,
         "schedules": schedules,
         "form": form,
     })
 
+def edit_schedule(request, pk):
+
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
+
+    username = request.session.get("username")
+    teacher = Teacher.objects.filter(user__username=username).first()
+
+    if not teacher:
+        messages.error(request, "Öğretmen profili bulunamadı.")
+        return redirect("login")
+
+    schedule = get_object_or_404(TeacherSchedule, pk=pk, teacher=teacher)
+
+    if request.method == "POST":
+        form = TeacherScheduleForm(request.POST, instance=schedule)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Program başarıyla güncellendi.")
+            return redirect("teachers:manage_schedule")
+    else:
+        form = TeacherScheduleForm(instance=schedule)
+
+    return render(request, "teachers/edit_schedule.html", {
+        "form": form,
+        "schedule": schedule
+    })
+
+def delete_schedule(request, pk):
+
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
+
+    username = request.session.get("username")
+    teacher = Teacher.objects.filter(user__username=username).first()
+
+    if not teacher:
+        messages.error(request, "Öğretmen profili bulunamadı.")
+        return redirect("login")
+
+    schedule = get_object_or_404(TeacherSchedule, pk=pk, teacher=teacher)
+
+    schedule.delete()
+    messages.success(request, "Program başarıyla silindi.")
+
+    return redirect("teachers:manage_schedule")
+
+
+
+# ===============================================================
+#  OFİS SAATLERİ
+# ===============================================================
 def manage_office_hours(request):
 
     if request.session.get("role") != "TEACHER":
         return redirect("login")
 
-    teacher = Teacher.objects.filter(user=request.user).first()
+    username = request.session.get("username")
+
+    teacher = Teacher.objects.filter(user__username=username).first()
 
     if not teacher:
         messages.error(request, "Öğretmen profili bulunamadı.")
@@ -165,6 +232,35 @@ def manage_office_hours(request):
         "office_hours": office_hours,
         "form": form,
     })
+
+def edit_office_hour(request, id):
+    oh = get_object_or_404(OfficeHour, id=id)
+    
+    if request.session.get("role") != "TEACHER" or oh.teacher.user.username != request.session.get("username"):
+        messages.error(request, "Yetkiniz yok.")
+        return redirect("login")
+    
+    if request.method == "POST":
+        form = OfficeHourForm(request.POST, instance=oh)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Ofis saati güncellendi.")
+            return redirect("teachers:manage_office_hours")
+    else:
+        form = OfficeHourForm(instance=oh)
+    
+    return render(request, "teachers/edit_office_hour.html", {"form": form})
+
+def delete_office_hour(request, id):
+    oh = get_object_or_404(OfficeHour, id=id)
+    
+    if request.session.get("role") != "TEACHER" or oh.teacher.user.username != request.session.get("username"):
+        messages.error(request, "Yetkiniz yok.")
+        return redirect("login")
+    
+    oh.delete()
+    messages.success(request, "Ofis saati silindi.")
+    return redirect("teachers:manage_office_hours")
 
 
 def course_management(request):

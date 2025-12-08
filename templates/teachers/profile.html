@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/teacher/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container mt-4">
+
+
+
+    <!-- HEADER -->
+    <div class="card shadow-sm mb-4 p-4 position-relative">
+
+        <button class="btn btn-secondary mb-3"
+                style="position:absolute; top:15px; right:15px;"
+                onclick="history.back()">Geri</button>
+
+        <div class="d-flex align-items-center">
+            <div class="me-4 text-center">
+
+                {% if teacher.user.profile_photo %}
+                    <img src="{{ teacher.user.profile_photo.url }}"
+                        alt="Profil Resmi"
+                        class="img-fluid rounded-circle mb-2"
+                        style="max-width:150px; margin-top:30px;">
+                {% else %}
+                    <img src="{% static 'img/anonim.jpg' %}"
+                        alt="Varsayılan Profil Resmi"
+                        class="img-fluid rounded-circle mb-2"
+                        style="max-width:150px; margin-top:30px;">
+                {% endif %}
+
+            </div>
+
+            <div>
+                <h3 class="mb-1">{{ teacher.get_academic_title_display }} {{ teacher.full_name }}</h3>
+                <p class="text-muted mb-1">{{ teacher.department.name }}</p>
+                <span class="badge bg-primary">{{ teacher.get_teacher_type_display }}</span>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- INFO CARDS -->
+    <div class="row">
+
+        <!-- GENEL BİLGİLER -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <strong>Genel Bilgiler</strong>
+                </div>
+                <div class="card-body">
+                    <p><strong>Sicil No:</strong> {{ teacher.employee_id }}</p>
+                    <p><strong>Email:</strong> {{ teacher.email }}</p>
+
+                    {% if teacher.expertise_area %}
+                        <p>
+                            <strong>Uzmanlık Alanları:</strong><br>
+                            <span style="font-weight: 400;">{{ teacher.expertise_area|linebreaksbr }}</span>
+                        </p>
+                    {% else %}
+                        <p class="text-muted">Uzmanlık alanı belirtilmemiş.</p>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- OFİS BİLGİLERİ -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <strong>Ofis Bilgileri</strong>
+                </div>
+                <div class="card-body">
+                    {% if teacher.office_location %}
+                        <p><strong>Ofis No:</strong> {{ teacher.office_location }}</p>
+                    {% endif %}
+
+                    {% if teacher.office_phone %}
+                        <p><strong>Telefon:</strong> {{ teacher.office_phone }}</p>
+                    {% endif %}
+
+                    {% if not teacher.office_location and not teacher.office_phone %}
+                        <p class="text-muted">Ofis bilgisi bulunmuyor.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- İLETİŞİM LİNKLERİ -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white">
+            <strong>Akademik & Sosyal Bağlantılar</strong>
+        </div>
+        <div class="card-body">
+
+            {% if teacher.has_contact_info %}
+                <ul class="list-group">
+                    {% if teacher.personal_website %}
+                    <li class="list-group-item">
+                        🌐 <strong>Kişisel Web Sitesi:</strong> 
+                        <a href="{{ teacher.personal_website }}" target="_blank">{{ teacher.personal_website }}</a>
+                    </li>
+                    {% endif %}
+
+                    {% if teacher.linkedin %}
+                    <li class="list-group-item">
+                        🔗 <strong>LinkedIn:</strong> 
+                        <a href="{{ teacher.linkedin }}" target="_blank">{{ teacher.linkedin }}</a>
+                    </li>
+                    {% endif %}
+
+                    {% if teacher.google_scholar %}
+                    <li class="list-group-item">
+                        📚 <strong>Google Scholar:</strong> 
+                        <a href="{{ teacher.google_scholar }}" target="_blank">{{ teacher.google_scholar }}</a>
+                    </li>
+                    {% endif %}
+
+                    {% if teacher.researchgate %}
+                    <li class="list-group-item">
+                        📘 <strong>ResearchGate:</strong> 
+                        <a href="{{ teacher.researchgate }}" target="_blank">{{ teacher.researchgate }}</a>
+                    </li>
+                    {% endif %}
+
+                    {% if teacher.orcid %}
+                    <li class="list-group-item">
+                        🧬 <strong>ORCID:</strong> 
+                        <a href="https://orcid.org/{{ teacher.orcid }}" target="_blank">{{ teacher.orcid }}</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            {% else %}
+                <p class="text-muted">Herhangi bir akademik bağlantı eklenmemiş.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

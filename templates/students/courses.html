@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Derslerim{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <button class="btn btn-secondary mb-3" onclick="history.back()">← Geri</button>
+
+    <div class="card shadow-sm p-4">
+        <h3 class="fw-bold mb-3">Derslerim</h3>
+
+        {% if student %}
+
+            {% if student.courses.all %}
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Ders Kodu</th>
+                            <th>Ders Adı</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for enrollment in enrollments %}
+                        <tr>
+                            <!-- Ders kodu -->
+                            <td>{{ enrollment.course.code }}</td>
+
+                            <!-- Ders adı -->
+                            <td>{{ enrollment.course.name }}</td>
+
+                            <!-- Component + Notlar -->
+                            <td>
+                                <ul>
+                                    {% for grade in enrollment.grades.all %}
+                                        <li>{{ grade.component.type }}: {{ grade.score|default:"-" }}</li>
+                                    {% empty %}
+                                        <li>Henüz not girilmedi</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            {% else %}
+                <div class="alert alert-info">
+                    Henüz kayıtlı dersiniz bulunmamaktadır.
+                </div>
+            {% endif %}
+
+        {% else %}
+            <div class="alert alert-danger">
+                Öğrenci hesabınız bulunamadı.
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
