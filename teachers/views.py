@@ -14,6 +14,7 @@ from courses.models import (
     CourseGrade
 )
 from outcomes.models import ProgramOutcome, LearningOutcome
+from students.models import Student
 from .models import Teacher, TeacherSchedule, OfficeHour
 from .forms import (
     TeacherProfileForm,
@@ -46,6 +47,12 @@ def teacher_dashboard(request):
     # 🔥 ÖNEMLİ: Öğretmene atanan dersler (ManyToMany)
     active_courses = teacher.courses.all()
 
+    total_students = (
+    Student.objects
+    .filter(courses__in=active_courses)
+    .distinct()
+    .count()
+)
 
     # Yaklaşan programlar
     upcoming_schedules = teacher.schedules.all().order_by("day_of_week", "start_time")[:5]
@@ -56,7 +63,7 @@ def teacher_dashboard(request):
     context = {
         "teacher": teacher,
         "active_courses": active_courses,
-        "total_students": 0,  # İstersen burada kayıtlı öğrencileri saydırırım
+        "total_students": total_students,
         "upcoming_schedules": upcoming_schedules,
         "active_office_hours": active_office_hours,
     }
