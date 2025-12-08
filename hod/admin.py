@@ -57,7 +57,7 @@ class TeacherCourseAssignmentAdmin(admin.ModelAdmin):
     autocomplete_fields = ("teacher", "course")
 
 # ---------------------------
-# 📚 Course Statistics Admin
+# Course Statistics Admin
 # ---------------------------
 @admin.register(CourseStatistic)
 class CourseStatisticAdmin(admin.ModelAdmin):
@@ -79,7 +79,7 @@ class CourseStatisticAdmin(admin.ModelAdmin):
 
 
 # ---------------------------
-# ⭐ Teacher Performance Admin
+# Teacher Performance Admin
 # ---------------------------
 @admin.register(TeacherPerformance)
 class TeacherPerformanceAdmin(admin.ModelAdmin):
@@ -101,7 +101,7 @@ class TeacherPerformanceAdmin(admin.ModelAdmin):
 
 
 # ---------------------------
-# 🧾 Report Log Admin
+# Report Log Admin
 # ---------------------------
 @admin.register(HeadReportLog)
 class HeadReportLogAdmin(admin.ModelAdmin):

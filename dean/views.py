@@ -3,42 +3,32 @@ import tempfile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from departments.models import Department, DepartmentCourse
-from courses.models import Course, CourseGrade, ComponentLearningProgramRelation
-from teachers.models import Teacher
+from courses.models import CourseGrade, ComponentLearningProgramRelation
+
 from students.models import Student
-from .models import Dean, FacultySettings
+from .models import Dean
 from .forms import TeacherForm
 from outcomes.models import ProgramOutcome, StudentProgramOutcomeScore
 from outcomes.management.commands.import_outcomes import OutcomeImporter
 from outcomes.services import compute_and_save_student_program_outcomes
 
-# ================================
-# OTURUM KONTROLÜ
-# ================================
 def is_dean_logged(request):
     return request.session.get("role") == "DEAN"
 
-
-# ================================
-# DEKAN DASHBOARD
-# ================================
 def dekan_dashboard(request):
     if not is_dean_logged(request):
         return redirect("login")
 
-    # === DEKAN BİLGİSİ ===
     username = request.session.get("username")
     dean = Dean.objects.filter(user__username=username).select_related("faculty").first()
     if not dean:
         messages.error(request, "Dekan profili bulunamadı.")
         return redirect("login")
 
-    # === OUTCOMES YÜKLEME ===
     if request.method == "POST" and request.FILES.get("docx_file"):
         docx_file = request.FILES["docx_file"]
         program_type = request.POST.get("program_type", "auto")
 
-        # Geçici dosyaya kaydet
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
             for chunk in docx_file.chunks():
                 tmp.write(chunk)
@@ -46,13 +36,11 @@ def dekan_dashboard(request):
 
         importer = OutcomeImporter()
 
-        # DOCX dosyasını işle
         if program_type == "auto":
             outcomes, detected_program = importer.parse_docx_file(tmp_path)
         else:
             outcomes, detected_program = importer.parse_docx_file(tmp_path, program_type)
 
-        # Bölümü tespit et
         department = Department.objects.filter(
             code__iexact=detected_program,
             faculty=dean.faculty
@@ -79,7 +67,6 @@ def dekan_dashboard(request):
         os.unlink(tmp_path)
         return redirect("dean:dashboard")
 
-    # === İSTATİSTİKLER ===
     departments = Department.objects.filter(faculty=dean.faculty)
     department_courses = DepartmentCourse.objects.filter(department__faculty=dean.faculty)
 
@@ -107,18 +94,14 @@ def dekan_dashboard(request):
 
 
 
-
-
 def student_po_report(request, student_id):
     if not is_dean_logged(request):
         return redirect("login")
 
     student = get_object_or_404(Student, id=student_id)
 
-    # 🔹 1) Hesapla ve kaydet (öğrenciye özel)
     compute_and_save_student_program_outcomes(student)
 
-    # 🔹 2) Veritabanından oku
     scores = (
         StudentProgramOutcomeScore.objects
         .filter(student=student)
@@ -141,8 +124,6 @@ def student_po_report(request, student_id):
         "rows": rows,
     })
 
-
-
 def student_list(request):
     if not is_dean_logged(request):
         return redirect("login")
@@ -156,7 +137,6 @@ def student_list(request):
     dept_id = request.GET.get("department")
     q = request.GET.get("q", "").strip()
 
-    # Sadece dekanın fakültesindeki öğrencileri alalım
     qs = (
         Student.objects
         .filter(departments__faculty=dean.faculty)
@@ -185,16 +165,13 @@ def student_list(request):
         "selected_department": selected_department,
         "students": qs,
         "q": q,
-        # diğer dashboard context'lerini de ekle ki bozulmasın
         "department_courses": [],
         "department_stats": [],
         "total_outcomes": ProgramOutcome.objects.filter(department__faculty=dean.faculty).count(),
     }
 
     return render(request, "dean/dashboard.html", context)
-# ================================
-# ÖĞRETMEN EKLEME (AYRI SAYFA)
-# ================================
+
 def add_teacher(request):
     if not is_dean_logged(request):
         return redirect("login")
@@ -213,13 +190,9 @@ def add_teacher(request):
 
 
 def compute_student_po_scores(student, normalize=True):
-    """
-    Öğrencinin tüm program outcome'larını döndürür.
-    Notu olmayanlar da 0 skorla gelir.
-    """
+
     results = {}
 
-    # öğrencinin departman(lar)ına göre tüm PO'ları çekelim
     all_pos = ProgramOutcome.objects.filter(department__in=student.departments.all())
     for po in all_pos:
         results[po.id] = {
@@ -230,7 +203,6 @@ def compute_student_po_scores(student, normalize=True):
             "score": 0.0,
         }
 
-    # öğrencinin tüm notlarını topla
     grades = CourseGrade.objects.filter(enrollment__student=student).select_related(
         "component", "component__course"
     )
@@ -239,18 +211,15 @@ def compute_student_po_scores(student, normalize=True):
         comp = grade.component
         score = float(grade.score or 0)
 
-        # Bu bileşenin LO/PO ilişkilerini al
         relations = ComponentLearningProgramRelation.objects.filter(component=comp).select_related(
             "learning_outcome", "program_outcome"
         )
 
-        # 🔹 Her program outcome için ağırlıklı toplama
         for rel in relations:
             po = rel.program_outcome
             if not po:
                 continue
 
-            # Eğer bu PO sonuçlarda yoksa ekle
             if po.id not in results:
                 results[po.id] = {
                     "code": po.code,
@@ -260,24 +229,21 @@ def compute_student_po_scores(student, normalize=True):
                     "score": 0.0,
                 }
 
-            # Learning + Program weight birleştirilerek etkili katsayı
+
             effective_weight = (rel.learning_weight / 100.0) * (rel.program_weight / 100.0)
 
-            # bileşen ağırlığını da dahil et (örneğin Vize 40%, Proje 60%)
+
             component_weight = comp.weight / 100.0
             combined_weight = effective_weight * component_weight
 
             results[po.id]["weight_sum"] += combined_weight
             results[po.id]["score_sum"] += score * combined_weight
 
-    # 🔹 Normalize et
     for po_id, item in results.items():
         total_weight = item["weight_sum"]
         if total_weight > 0:
-            # normalize=True ise yüzdeye dönüştür, değilse ham ağırlıklı ortalama ver
             normalized_score = (item["score_sum"] / total_weight)
             item["score"] = round(normalized_score if not normalize else normalized_score, 2)
-            # Kapsama yüzdesini de 100 çarpanıyla göster
             item["weight_sum"] = round(total_weight * 100, 2)
         else:
             item["score"] = 0.0

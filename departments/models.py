@@ -3,9 +3,6 @@ from accounts.models import SimpleUser
 from faculty.models import Faculty
 
 
-# ============================================================
-# DEPARTMENT MODELİ
-# ============================================================
 class Department(models.Model):
     code = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=100)
@@ -14,25 +11,11 @@ class Department(models.Model):
         on_delete=models.CASCADE,
         related_name="departments"
     )
-    quota = models.PositiveIntegerField(default=100)
-
-    # Bölüm başkanı: doğrudan SimpleUser (HOD) bağlıyoruz
-    head_user = models.OneToOneField(
-        SimpleUser,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        limit_choices_to={'role': 'HOD'},
-        related_name='headed_department'
-    )
 
     def __str__(self):
         return f"{self.code} - {self.name}"
 
 
-# ============================================================
-# DEPARTMENT COURSE MODELİ
-# ============================================================
 class DepartmentCourse(models.Model):
     department = models.ForeignKey(
         Department,
@@ -54,9 +37,6 @@ class DepartmentCourse(models.Model):
         return f"{self.department.name} - {self.course}"
 
 
-# ============================================================
-# DEPARTMENT STATISTIC MODELİ
-# ============================================================
 class DepartmentStatistic(models.Model):
     department = models.OneToOneField(
         Department,

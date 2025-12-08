@@ -17,18 +17,12 @@ class Teacher(models.Model):
         ('RESEARCH_ASSIST', 'Arş. Gör.'),
     ]
 
-    # 🔥 SimpleUser ile ilişki (çok doğru yaptın)
     user = models.OneToOneField(
         SimpleUser,
         on_delete=models.CASCADE,
         related_name='teacher_profile'
     )
 
-    employee_id = models.CharField(
-        max_length=20,
-        unique=True,
-        verbose_name="Sicil No"
-    )
 
     department = models.ForeignKey(
         Department,
@@ -79,7 +73,6 @@ class Teacher(models.Model):
     class Meta:
         verbose_name = "Öğretim Görevlisi"
         verbose_name_plural = "Öğretim Görevlileri"
-        # 🔥 Artık hatasız, güvenli ordering:
         ordering = ['academic_title', 'id']
 
     def __str__(self):

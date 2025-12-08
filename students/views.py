@@ -1,4 +1,4 @@
-# students/views.py
+
 from django.shortcuts import render, get_object_or_404
 from accounts.decorators import require_role
 from .models import Student
@@ -15,12 +15,10 @@ def dashboard(request):
         return render(request, "students/dashboard.html", {'student': None})
     
     try:
-        # SimpleUser'dan Student'e geçiş
         simple_user = SimpleUser.objects.get(username=username)
-        
-        # Student'i bul (full_name veya email ile)
+
         student = Student.objects.filter(user=simple_user).first()
-        # Eğer bulamazsak email ile dene
+
         if not student and simple_user.email:
             student = Student.objects.filter(email=simple_user.email).first()
             
@@ -61,7 +59,7 @@ def profile(request):
 
 @require_role("STUDENT")
 def courses(request):
-    """Öğrencinin dersleri"""
+
     username = request.session.get("username")
     
     if not username:
