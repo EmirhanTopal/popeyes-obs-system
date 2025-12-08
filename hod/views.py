@@ -3,6 +3,7 @@ from accounts.models import SimpleUser
 from departments.models import DepartmentCourse, DepartmentStatistic
 from teachers.models import Teacher, TeacherSchedule
 from hod.models import Head
+from students.models import Student
 from courses.models import Course, CourseOffering, CourseAssessmentComponent
 from academics.models import Level
 from django.contrib import messages
@@ -33,15 +34,29 @@ def dashboard(request):
         department=department
     ).select_related("course")
 
-    teachers = Teacher.objects.filter(department=department)
+    course_list = dept_courses.values_list("course", flat=True)
 
-    # ✅ Dean onayı kalktığı için pending_course kavramı artık yok
+
+    teachers = Teacher.objects.filter(department=department)
+    teacher_count = teachers.count()
+
+
+    student_count = (
+    Student.objects
+    .filter(courses__in=course_list)
+    .distinct()
+    .count()
+)
+
+
     return render(request, "hod/dashboard.html", {
         "username": username,
         "department": department,
         "stats": stats,
         "dept_courses": dept_courses,
         "teachers": teachers,
+        "teacher_count": teacher_count,
+        "student_count": student_count,
     })
 
 
