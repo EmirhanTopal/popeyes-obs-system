@@ -13,6 +13,8 @@ urlpatterns = [
 
     # Program yönetimi
     path('schedule/', views.manage_schedule, name='manage_schedule'),
+    path("schedule/<int:pk>/edit/", views.edit_schedule, name="edit_schedule"),
+    path("schedule/<int:pk>/delete/", views.delete_schedule, name="delete_schedule"),
     path('office-hours/', views.manage_office_hours, name='manage_office_hours'),
     path("office_hours/edit/<int:id>/", views.edit_office_hour, name="edit_office_hour"),
     path("office_hours/delete/<int:id>/", views.delete_office_hour, name="delete_office_hour"),

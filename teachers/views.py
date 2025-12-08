@@ -162,6 +162,53 @@ def manage_schedule(request):
         "form": form,
     })
 
+def edit_schedule(request, pk):
+
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
+
+    username = request.session.get("username")
+    teacher = Teacher.objects.filter(user__username=username).first()
+
+    if not teacher:
+        messages.error(request, "Öğretmen profili bulunamadı.")
+        return redirect("login")
+
+    schedule = get_object_or_404(TeacherSchedule, pk=pk, teacher=teacher)
+
+    if request.method == "POST":
+        form = TeacherScheduleForm(request.POST, instance=schedule)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Program başarıyla güncellendi.")
+            return redirect("teachers:manage_schedule")
+    else:
+        form = TeacherScheduleForm(instance=schedule)
+
+    return render(request, "teachers/edit_schedule.html", {
+        "form": form,
+        "schedule": schedule
+    })
+
+def delete_schedule(request, pk):
+
+    if request.session.get("role") != "TEACHER":
+        return redirect("login")
+
+    username = request.session.get("username")
+    teacher = Teacher.objects.filter(user__username=username).first()
+
+    if not teacher:
+        messages.error(request, "Öğretmen profili bulunamadı.")
+        return redirect("login")
+
+    schedule = get_object_or_404(TeacherSchedule, pk=pk, teacher=teacher)
+
+    schedule.delete()
+    messages.success(request, "Program başarıyla silindi.")
+
+    return redirect("teachers:manage_schedule")
+
 
 
 # ===============================================================

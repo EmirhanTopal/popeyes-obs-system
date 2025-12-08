@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/teacher/edit_schedule.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="edit-container py-4">
+
+    <!-- Geri butonu -->
+    <a href="{% url 'teachers:manage_schedule' %}" class="btn btn-secondary btn-sm mb-3">
+        ← Geri
+    </a>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h4 class="mb-0">📆 Programı Düzenle</h4>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Mesajlar -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" class="row g-3">
+                {% csrf_token %}
+
+                <div class="col-md-4">
+                    <label class="form-label">Gün</label>
+                    {{ form.day_of_week|add_class:"form-select" }}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Başlangıç Saati</label>
+                    {{ form.start_time|add_class:"form-control" }}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Bitiş Saati</label>
+                    {{ form.end_time|add_class:"form-control" }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Etkinlik Türü</label>
+                    {{ form.activity_type|add_class:"form-control" }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Yer</label>
+                    {{ form.location|add_class:"form-control" }}
+                </div>
+
+                <div class="col-12 mt-3 d-flex justify-content-between">
+                    <a href="{% url 'teachers:manage_schedule' %}" class="btn btn-outline-secondary">
+                        İptal
+                    </a>
+
+                    <button type="submit" class="btn btn-primary">
+                        💾 Kaydet
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
