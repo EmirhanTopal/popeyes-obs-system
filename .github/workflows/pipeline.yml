@@ -24,8 +24,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Bağımlılıkları yükle
-        run: pip install -r requirements.txt
-
-      - name: Testleri çalıştır
-        run: pytest -v
+      - name: Bağımlılıkları yükle ve Testleri çalıştır
+        run: |
+          pip install -r requirements.txt
+          pytest -v 
+          # VEYA, daha garanti olması için python modülü olarak çalıştırabilirsiniz:
+          # python -m pytest -v
