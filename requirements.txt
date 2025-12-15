@@ -1,0 +1,2 @@
+Django~=5.2.7
+python-docx~=1.2.0
