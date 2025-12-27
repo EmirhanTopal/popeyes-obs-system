@@ -50,6 +50,14 @@ class Course(models.Model):
         verbose_name="Önşartlı Dersler",
     )
 
+    created_by_head = models.ForeignKey(
+        "hod.Head",   # ✅ STRING REFERANS
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_courses"
+    )
+
     def __str__(self):
         return f"{self.code} - {self.name} ({self.get_course_type_display()})"
 

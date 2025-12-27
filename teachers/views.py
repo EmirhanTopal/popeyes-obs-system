@@ -300,8 +300,10 @@ def attendance_management(request, offering_id):
 
     if request.session.get("role") != "TEACHER":
         return redirect("login")
+    
+    username = request.session.get("username")
+    teacher = Teacher.objects.filter(user__username=username).first()
 
-    teacher = Teacher.objects.filter(user=request.user).first()
 
     course = get_object_or_404(
         CourseOffering,
@@ -311,7 +313,7 @@ def attendance_management(request, offering_id):
     )
 
     enrollments = Enrollment.objects.filter(
-        course=course,
+        offering= offering_id,
         is_active=True
     ).select_related("student")
 
@@ -345,11 +347,11 @@ def manage_components(request, offering_id):
 
     from django.db.models import Prefetch
 
-    components = CourseAssessmentComponent.objects.filter(course=course).prefetch_related(
+    components = CourseAssessmentComponent.objects.filter(offering=offering).prefetch_related(
         Prefetch("learning_relations", queryset=ComponentLearningRelation.objects.select_related("learning_outcome"))
     ).order_by("type")
 
-    learning_outcomes = LearningOutcome.objects.filter(course=course)
+    learning_outcomes = LearningOutcome.objects.filter(offering=offering)
     program_outcomes = ProgramOutcome.objects.all()
 
     if request.method == "POST":
@@ -381,7 +383,7 @@ def manage_components(request, offering_id):
                 )
             else:
                 comp = CourseAssessmentComponent.objects.create(
-                    course=course, type=t, weight=w
+                    offering=offering, type=t, weight=w
                 )
             used_components.add(comp.id)
 
@@ -398,7 +400,7 @@ def manage_components(request, offering_id):
                         weight=float(lw or 0.0),
                     )
 
-        CourseAssessmentComponent.objects.filter(course=course).exclude(id__in=used_components).delete()
+        CourseAssessmentComponent.objects.filter(offering=offering).exclude(id__in=used_components).delete()
 
         # ===========================================
         # 2️⃣ Program Output (LO → PO)
@@ -471,7 +473,7 @@ def manage_learning_outcomes(request, offering_id):
     course = offering.course
 
     # ✅ DOĞRU SORGU
-    outcomes = LearningOutcome.objects.filter(course=course)
+    outcomes = LearningOutcome.objects.filter(offering=offering)
 
     if request.method == "POST":
         code = request.POST.get("code")
@@ -479,7 +481,7 @@ def manage_learning_outcomes(request, offering_id):
 
         if code and description:
             LearningOutcome.objects.create(
-                course=course,
+                offering=offering,
                 code=code,
                 description=description
             )
@@ -506,15 +508,8 @@ def manage_grades(request, offering_id):
         messages.error(request, "Öğretmen profili bulunamadı.")
         return redirect("login")
 
-    offering = get_object_or_404(
-        CourseOffering,
-        id=offering_id,
-        instructors=teacher
-    )
-    course = offering.course
-
     # Ders bileşenleri
-    components = CourseAssessmentComponent.objects.filter(course=course).order_by("type")
+    components = CourseAssessmentComponent.objects.filter(offering=offering).order_by("type")
 
     # Derse kayıtlı öğrenciler
     offering = get_object_or_404(
