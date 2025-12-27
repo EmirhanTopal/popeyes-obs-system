@@ -4,8 +4,24 @@ from .models import Dean, FacultySettings, FacultyReport
 
 @admin.register(Dean)
 class DeanAdmin(admin.ModelAdmin):
-    list_display = ("user", "faculty", "full_name")
-    search_fields = ("user__username", "faculty__name", "full_name")
+    list_display = (
+        "teacher",
+        "faculty",
+        "teacher_full_name",
+    )
+
+    search_fields = (
+        "teacher__user__username",
+        "teacher__user__first_name",
+        "teacher__user__last_name",
+        "faculty__name",
+    )
+
+    autocomplete_fields = ("teacher", "faculty")
+    
+    def teacher_full_name(self, obj):
+        return obj.teacher.full_name if obj.teacher else "-"
+    teacher_full_name.short_description = "Dean"
 
 
 @admin.register(FacultySettings)

@@ -2,7 +2,7 @@
 from django.shortcuts import render, get_object_or_404
 from accounts.decorators import require_role
 from .models import Student
-from courses.models import CourseEnrollment
+from courses.models import Enrollment
 from accounts.models import SimpleUser
 from django.shortcuts import redirect
 
@@ -73,15 +73,11 @@ def courses(request):
         student = None
 
     # Eğer öğrenci bulunduysa ilgili ders, not ve component bilgilerini çek
-    enrollments = None
-    if student:
-        enrollments = (
-            student.course_enrollments
-            .select_related("course")
-            .prefetch_related(
-                "grades__component"     # Grade içindeki component bilgilerini getirir
-            )
-        )
+    enrollments = student.enrollments.select_related(
+        "offering",
+        "offering__course"
+    )
+
 
     context = {
         'student': student,
@@ -114,8 +110,6 @@ def attendance(request):
 @require_role("ADMIN")
 def admin_student_profile(request, student_id):
     """Admin panelinden öğrenci profili görüntüleme"""
-
-    # Student modelinde student_no alanı var, ona göre buluyoruz
     student = get_object_or_404(Student, student_no=student_id)
 
     context = {

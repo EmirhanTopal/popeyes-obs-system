@@ -5,3 +5,4 @@ from faculty.models import Faculty
 @admin.register(Faculty)
 class FacultyAdmin(admin.ModelAdmin):
     list_display = ('full_name',)
+    search_fields = ("full_name",)

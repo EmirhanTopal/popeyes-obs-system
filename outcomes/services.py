@@ -2,10 +2,11 @@
 from collections import defaultdict
 
 from courses.models import (
-    CourseEnrollment,              # Öğrencinin derse kayıtları
+    Enrollment,              # Öğrencinin derse kayıtları
     CourseAssessmentComponent,     # Vize/Final/Proje vb.
     CourseGrade,                   # Bileşen notu
     ComponentLearningRelation,     # Component -> LO (%)
+    CourseOffering,
 )
 from outcomes.models import ProgramOutcome, LearningOutcome, StudentProgramOutcomeScore
 from courses.models import LearningProgramRelation
@@ -46,9 +47,12 @@ def compute_student_learning_outcomes(student):
        (component.weight kullanılmaz)
     Dönen: {lo_id: score_float}
     """
-    enrollments = (CourseEnrollment.objects
-                   .filter(student=student, is_active=True)
-                   .select_related("course"))
+    enrollments = (
+        Enrollment.objects
+        .filter(student=student, status=Enrollment.Status.ENROLLED)
+        .select_related("offering", "offering__course")
+    )
+
     if not enrollments.exists():
         return {}
 
@@ -56,15 +60,18 @@ def compute_student_learning_outcomes(student):
     grade_map = {(int(g.enrollment_id), int(g.component_id)): float(g.score or 0.0)
                  for g in grades}
 
-    enr_by_course = {e.course_id: e for e in enrollments}
+    enr_by_offering = {e.offering_id: e for e in enrollments}
     lo_scores = defaultdict(float)
 
     components = CourseAssessmentComponent.objects.filter(
-        course_id__in=enr_by_course.keys()
+        course__in=[e.offering.course for e in enrollments]
     )
 
     for comp in components:
-        enr = enr_by_course.get(comp.course_id)
+        enr = next(
+            (e for e in enrollments if e.offering.course_id == comp.course_id),
+            None
+        )
         if not enr:
             continue
 
@@ -84,37 +91,37 @@ def compute_student_learning_outcomes(student):
 
 
 def compute_student_program_outcomes(student):
-    """
-    Component (Vize, Proje) -> LO -> PO hesaplaması
-    Component.weight dikkate alınmaz, sadece:
-      - ComponentLearningRelation.weight (%)
-      - LearningProgramRelation.weight (%)
-    baz alınır.
-    """
 
-    # 1️⃣ Öğrencinin aldığı ders kayıtlarını bul
-    enrollments = CourseEnrollment.objects.filter(student=student).select_related("course")
+    enrollments = (
+        Enrollment.objects
+        .filter(student=student, status=Enrollment.Status.ENROLLED)
+        .select_related("offering", "offering__course")
+    )
+
     student_departments = student.departments.all()
+
     if not enrollments.exists():
         return {}
 
-    # Not haritası (enrollment_id, component_id) -> score
     grades = CourseGrade.objects.filter(enrollment__in=enrollments)
-    grade_map = {(g.enrollment_id, g.component_id): float(g.score or 0.0) for g in grades}
+    grade_map = {
+        (g.enrollment_id, g.component_id): float(g.score or 0.0)
+        for g in grades
+    }
 
-    # 2️⃣ Component -> LO hesaplaması
     lo_scores = defaultdict(float)
     lo_weights = defaultdict(float)
 
     for enrollment in enrollments:
-        components = CourseAssessmentComponent.objects.filter(course=enrollment.course)
+        course = enrollment.offering.course
+
+        components = CourseAssessmentComponent.objects.filter(course=course)
 
         for comp in components:
             score = grade_map.get((enrollment.id, comp.id))
             if score is None:
                 continue
 
-            # Bu componentin LO ilişkilerini al
             relations = ComponentLearningRelation.objects.filter(component=comp)
 
             for rel in relations:
@@ -123,14 +130,12 @@ def compute_student_program_outcomes(student):
                     lw /= 100.0
 
                 lo_scores[rel.learning_outcome_id] += score * lw
-                lo_weights[rel.learning_outcome_id] += lw * 100  # normalize için yüzdelik tut
+                lo_weights[rel.learning_outcome_id] += lw * 100
 
-    # 3️⃣ LO normalize et (%100’den fazlaysa /1.x)
     for lo_id, total_w in lo_weights.items():
         if total_w > 100:
             lo_scores[lo_id] /= (total_w / 100.0)
 
-    # 4️⃣ LO -> PO hesaplaması
     po_scores = defaultdict(float)
     po_weights = defaultdict(float)
 
@@ -148,12 +153,10 @@ def compute_student_program_outcomes(student):
             po_scores[m.program_outcome_id] += lo_score * pw
             po_weights[m.program_outcome_id] += pw * 100
 
-    # 5️⃣ PO normalize et
     for po_id, total_w in po_weights.items():
         if total_w > 100:
             po_scores[po_id] /= (total_w / 100.0)
 
-    # 6️⃣ Sonuçları derle
     results = {}
     for po_id, score in po_scores.items():
         po = ProgramOutcome.objects.get(id=po_id)
@@ -164,10 +167,10 @@ def compute_student_program_outcomes(student):
             "score": round(score, 2),
         }
 
-    # 🔽 Veritabanındaki sıralamaya göre sırala
     ordered_results = {}
-    student_departments = student.departments.all()
-    all_pos = ProgramOutcome.objects.filter(department__in=student_departments).order_by("id")
+    all_pos = ProgramOutcome.objects.filter(
+        department__in=student_departments
+    ).order_by("id")
 
     for po in all_pos:
         ordered_results[po.id] = results.get(po.id, {

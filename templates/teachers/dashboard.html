@@ -31,7 +31,7 @@
                                             Aktif Dersler
                                         </div>
                                         <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            {{ active_courses.count }}
+                                            {{ active_offering.count }}
                                         </div>
                                     </div>
                                     <div class="col-auto">
@@ -178,17 +178,17 @@
                             </div>
                             <div class="card-body">
 
-                                {% if active_courses %}
-                                {% for course in active_courses %}
+                                {% if active_offering %}
+                                {% for offering in active_offering %}
                                 <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
                                     <div>
-                                        <h6 class="mb-0">{{ course.name }}</h6>
-                                        <small class="text-muted">{{ course.code }}</small><br>
-                                        <small>Kredi: {{ course.credit }} | AKTS: {{ course.ects }}</small>
+                                        <h6 class="mb-0">{{ offering.course.name }}</h6>
+                                        <small class="text-muted">{{ offering.course.code }}</small><br>
+                                        <small>Kredi: {{ offering.course.credit }} | AKTS: {{ offering.course.ects }}</small>
                                     </div>
                                     <div>
-                                        <a href="{% url 'teachers:manage_learning_outcomes' course.id %}" class="btn btn-sm btn-outline-primary">Çıktılar</a>
-                                        <a href="{% url 'teachers:manage_grades' course.id %}" class="btn btn-sm btn-outline-success">Notlar</a>
+                                        <a href="{% url 'teachers:manage_learning_outcomes' offering.course.id %}" class="btn btn-sm btn-outline-primary">Çıktılar</a>
+                                        <a href="{% url 'teachers:manage_grades' offering.course.id %}" class="btn btn-sm btn-outline-success">Notlar</a>
                                     </div>
                                 </div>
                                 {% endfor %}

@@ -1,5 +1,6 @@
 from django import forms
 from .models import Teacher, TeacherSchedule, OfficeHour
+from outcomes.models import LearningOutcome
 # from courses.models import LearningOutcome
 
 class TeacherProfileForm(forms.ModelForm):
@@ -95,19 +96,19 @@ class OfficeHourForm(forms.ModelForm):
             'end_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
         }
 
-# class LearningOutcomeForm(forms.ModelForm):
-#     class Meta:
-#         model = LearningOutcome
-#         fields = ['outcome_code', 'description', 'bloom_level', 'order']
-#         widgets = {
-#             'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
-#             'outcome_code': forms.TextInput(attrs={'class': 'form-control'}),
-#             'bloom_level': forms.Select(attrs={'class': 'form-control'}),
-#             'order': forms.NumberInput(attrs={'class': 'form-control'}),
-#         }
-#         labels = {
-#             'outcome_code': 'Çıktı Kodu (Örn: LO1)',
-#             'description': 'Öğrenme Çıktısı Açıklaması',
-#             'bloom_level': 'Bloom Seviyesi',
-#             'order': 'Sıralama',
-#         }
+class LearningOutcomeForm(forms.ModelForm):
+    class Meta:
+        model = LearningOutcome
+        fields = ['code', 'description', 'bloom_level', 'order']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'code': forms.TextInput(attrs={'class': 'form-control'}),
+            'bloom_level': forms.Select(attrs={'class': 'form-control'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'code': 'Çıktı Kodu (Örn: LO1)',
+            'description': 'Öğrenme Çıktısı Açıklaması',
+            'bloom_level': 'Bloom Seviyesi',
+            'order': 'Sıralama',
+        }

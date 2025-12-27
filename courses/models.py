@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 
 from accounts.models import SimpleUser
 from academics.models import Level
-from outcomes.models import LearningOutcome
 
 class Course(models.Model):
     COURSE_TYPE_CHOICES = [
@@ -61,20 +60,12 @@ class Course(models.Model):
             raise ValidationError(_("Bir ders kendisini önkoşul olarak içeremez."))
 
 
-class CourseEnrollment(models.Model):
-    course = models.ForeignKey("courses.Course", on_delete=models.CASCADE, related_name="enrollments")
-    student = models.ForeignKey("students.Student", on_delete=models.CASCADE, related_name="course_enrollments")
-    date_enrolled = models.DateField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
-    class Meta:
-        unique_together = ("course", "student")
-
-    def __str__(self):
-        return f"{self.student} - {self.course.code}"
-
-
 class CourseGrade(models.Model):
-    enrollment = models.ForeignKey(CourseEnrollment, on_delete=models.CASCADE, related_name="grades")
+    enrollment = models.ForeignKey(
+    "courses.Enrollment",
+    on_delete=models.CASCADE,
+    related_name="grades",
+    )
     component = models.ForeignKey("courses.CourseAssessmentComponent", on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
@@ -122,6 +113,7 @@ class CourseOffering(models.Model):
     )
     year = models.PositiveSmallIntegerField()
     semester = models.CharField(max_length=10, choices=SEMESTER_CHOICES)
+    is_active = models.BooleanField(default=True)
 
     section = models.CharField(max_length=10, blank=True)
 
@@ -216,10 +208,11 @@ class Enrollment(models.Model):
         COMPLETED = "COMPLETED", _("Tamamlandı")
 
     student = models.ForeignKey(
-        SimpleUser,
+        "students.Student",
         on_delete=models.CASCADE,
         related_name="enrollments",
     )
+
     offering = models.ForeignKey(
         CourseOffering,
         on_delete=models.CASCADE,
@@ -280,7 +273,7 @@ class ComponentLearningRelation(models.Model):
         related_name="learning_relations"
     )
     learning_outcome = models.ForeignKey(
-        LearningOutcome,
+        "outcomes.LearningOutcome",
         on_delete=models.CASCADE,
         related_name="component_relations"
     )
