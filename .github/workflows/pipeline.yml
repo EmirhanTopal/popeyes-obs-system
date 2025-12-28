@@ -32,3 +32,9 @@ jobs:
 
       - name: Dean Testlerini çalıştır
         run: python manage.py test dean
+
+      - name: Hod Testlerini çalıştır
+        run: python manage.py test hod
+
+      - name: Students Testlerini çalıştır
+        run: python manage.py test students
