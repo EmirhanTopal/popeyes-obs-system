@@ -1,0 +1,146 @@
+/* ========== GENEL ALAN ========== */
+.dean-dashboard {
+    background: linear-gradient(135deg, #f4f7fb, #eef2f7);
+    min-height: calc(100vh - 80px);
+    padding-bottom: 2rem;
+}
+
+/* Başlık */
+.dean-dashboard .section-title {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: #2c3e50;
+}
+
+/* ========== CARD GENEL ========== */
+.dean-dashboard .card {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+}
+
+/* Ana kart (Program Outcomes) */
+.dean-dashboard .main-card {
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.dean-dashboard .card-header {
+    font-size: 1rem;
+    border-bottom: none;
+}
+
+/* ========== STAT CARDS ========== */
+.dean-dashboard .stat-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 1.5rem 1rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.dean-dashboard .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.1);
+}
+
+.dean-dashboard .stat-card h5 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.dean-dashboard .stat-card h2 {
+    font-weight: 800;
+    margin-bottom: 0.2rem;
+}
+
+/* ========== UPLOAD ALANI ========== */
+.dean-dashboard .upload-area {
+    background: #f9fbfd;
+    border-radius: 14px;
+    padding: 1.5rem;
+    border: 1px dashed #d0d7e2;
+}
+
+/* ========== MINI CARDS ========== */
+.dean-dashboard .mini-card {
+    height: 100%;
+}
+
+.dean-dashboard .mini-card .card-header {
+    background-color: #ffffff;
+    font-weight: 600;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* ========== LIST GROUP ========== */
+.dean-dashboard .list-group-item {
+    border: none;
+    border-bottom: 1px solid #f1f1f1;
+    transition: background-color 0.2s ease, padding-left 0.2s ease;
+}
+
+.dean-dashboard .list-group-item:hover {
+    background-color: #f4f7fb;
+    padding-left: 1.25rem;
+}
+
+/* ========== TABLE ========== */
+.dean-dashboard .table {
+    font-size: 0.9rem;
+}
+
+.dean-dashboard .table thead th {
+    font-weight: 600;
+    color: #555;
+    border-bottom: none;
+}
+
+.dean-dashboard .table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.dean-dashboard .table tbody tr:hover {
+    background-color: #f6f9fc;
+}
+
+/* ========== BADGE ========== */
+.dean-dashboard .badge-dept {
+    background-color: #e3f2fd;
+    color: #0d6efd;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.35em 0.6em;
+}
+
+/* ========== BUTTONLAR ========== */
+.dean-dashboard .btn {
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.dean-dashboard .btn-success {
+    background: linear-gradient(45deg, #198754, #20c997);
+    border: none;
+}
+
+.dean-dashboard .btn-success:hover {
+    background: linear-gradient(45deg, #157347, #1aa179);
+}
+
+.dean-dashboard .btn-outline-primary:hover {
+    color: #fff;
+}
+
+/* ========== ALERT ========== */
+.dean-dashboard .alert {
+    border-radius: 12px;
+    font-size: 0.9rem;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 992px) {
+    .dean-dashboard .section-title {
+        font-size: 1.3rem;
+    }
+}

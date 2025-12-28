@@ -1,0 +1,84 @@
+/* ===== GENEL ALAN ===== */
+.po-report {
+    background: linear-gradient(135deg, #f4f7fb, #eef2f7);
+    min-height: calc(100vh - 80px);
+}
+
+/* ===== ANA KART ===== */
+.po-report .main-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+/* ===== CARD HEADER ===== */
+.po-report .card-header {
+    background: #ffffff;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.po-report .card-header h4 {
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+/* ===== TABLE ===== */
+.po-report .po-table {
+    font-size: 0.95rem;
+}
+
+.po-report .po-table thead {
+    background-color: #f8f9fb;
+}
+
+.po-report .po-table th {
+    font-weight: 600;
+    color: #555;
+    border-bottom: none;
+}
+
+.po-report .po-table td {
+    vertical-align: middle;
+}
+
+.po-report .po-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.po-report .po-table tbody tr:hover {
+    background-color: #f6f9fc;
+}
+
+/* Outcome açıklaması */
+.po-report .desc {
+    max-width: 680px;
+    color: #444;
+}
+
+/* ===== SKOR BADGE ===== */
+.po-report .score-badge {
+    display: inline-block;
+    min-width: 70px;
+    text-align: center;
+    padding: 0.35rem 0.6rem;
+    border-radius: 10px;
+    font-weight: 700;
+    background: linear-gradient(45deg, #0d6efd, #4dabf7);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+}
+
+/* ===== BUTTON ===== */
+.po-report .btn-outline-secondary {
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .po-report .desc {
+        max-width: 100%;
+    }
+}

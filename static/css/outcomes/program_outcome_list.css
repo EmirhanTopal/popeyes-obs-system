@@ -1,0 +1,27 @@
+.po-list {
+    background: linear-gradient(135deg, #f4f7fb, #eef2f7);
+    min-height: calc(100vh - 80px);
+}
+
+.po-list .main-card {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+}
+
+.po-list .po-table thead {
+    background-color: #f8f9fa;
+}
+
+.po-list .po-table th {
+    font-weight: 600;
+    color: #444;
+}
+
+.po-list .po-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.po-list .po-table tbody tr:hover {
+    background-color: #f1f5fb;
+}

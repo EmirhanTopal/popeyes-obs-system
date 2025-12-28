@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Program Outcomes{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/outcomes/program_outcome_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="content po-list">
+
+  <div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="fw-bold">📋 Program Outcomes</h3>
+      <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">
+        ← Geri
+      </a>
+    </div>
+
+    <div class="card main-card">
+      <div class="table-responsive">
+        <table class="table po-table mb-0">
+          <thead>
+            <tr>
+              <th>Kod</th>
+              <th>Outcome Açıklaması</th>
+              <th>Departman</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for po in outcomes %}
+              <tr>
+                <td class="fw-semibold">{{ po.code }}</td>
+                <td>{{ po.description }}</td>
+                <td>
+                  <span class="badge bg-primary">
+                    {{ po.department.code }}
+                  </span>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="3" class="text-center text-muted py-4">
+                  Kayıtlı Program Outcome bulunamadı.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+{% endblock %}
