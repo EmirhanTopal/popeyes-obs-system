@@ -40,9 +40,19 @@ class CourseContentAdmin(admin.ModelAdmin):
 
 @admin.register(CourseAssessmentComponent)
 class CourseAssessmentComponentAdmin(admin.ModelAdmin):
-    list_display = ("course", "type", "weight")
-    list_filter = ("type", "course")
-    search_fields = ("course__code", "course__name", "type")
+    list_display = ("course_display", "type", "weight")
+    list_filter = ("type", "offering")
+    search_fields = (
+        "offering__course__code",
+        "offering__course__name",
+        "type",
+    )
+
+    def course_display(self, obj):
+        return f"{obj.offering.course.code} - {obj.offering.course.name}"
+
+    course_display.short_description = "Course"
+
 
 
 

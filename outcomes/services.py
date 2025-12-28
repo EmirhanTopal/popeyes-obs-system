@@ -115,7 +115,7 @@ def compute_student_program_outcomes(student):
     for enrollment in enrollments:
         course = enrollment.offering.course
 
-        components = CourseAssessmentComponent.objects.filter(course=course)
+        components = CourseAssessmentComponent.objects.filter(offering=enrollment.offering)
 
         for comp in components:
             score = grade_map.get((enrollment.id, comp.id))

@@ -2,8 +2,11 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from accounts.models import SimpleUser
 from courses.models import CourseOffering, CourseAssessmentComponent
+from django.core.exceptions import ValidationError
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
-
+ 
 # ============================================================
 # GRADE MODEL (ANA TABLO)
 # ============================================================
@@ -73,22 +76,8 @@ class Grade(models.Model):
         return "FF", 0.0
 
     def save(self, *args, **kwargs):
-
-        # 1) İlk kez oluşturuluyorsa sadece kaydet
-        if not self.pk:
-            super().save(*args, **kwargs)
-            return
-
-        # 2) Artık component_grades erişilebilir → hesaplama yap
-        self.total_score = self.calculate_total()
-
-        if self.total_score is not None:
-            self.letter_grade, self.gpa_value = self.assign_letter_grade()
-        else:
-            self.letter_grade = None
-            self.gpa_value = None
-
         super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f"{self.student} → {self.offering} ({self.letter_grade})"
@@ -113,6 +102,15 @@ class GradeComponent(models.Model):
 
     class Meta:
         unique_together = ("grade", "component")
+
+    def clean(self):
+        if self.component.offering != self.grade.offering:
+            raise ValidationError(
+                "Bu bileşen, bu dersin değerlendirme sistemine ait değil."
+            )
+        
+    
+
 
     def __str__(self):
         return f"{self.grade.student} - {self.component.get_type_display()} : {self.score}"
@@ -150,8 +148,16 @@ class TranscriptManager:
         if not grades.exists():
             return 0.0
 
-        gpa = sum(g.gpa_value for g in grades) / grades.count()
-        return round(gpa, 2)
+        total_points = 0
+        total_credits = 0
+
+        for g in grades:
+            credit = g.offering.course.credit
+            total_points += g.gpa_value * credit
+            total_credits += credit
+
+        return round(total_points / total_credits, 2)
+
 
     @staticmethod
     def semester_grades(student, year, semester):
@@ -180,3 +186,15 @@ class TranscriptManager:
             "geçen_sayısı": grades.filter(gpa_value__gt=0).count(),
             "kalan_sayısı": grades.filter(gpa_value=0).count(),
         }
+
+@receiver([post_save, post_delete], sender=GradeComponent)
+def recalc_grade(sender, instance, **kwargs):
+    grade = instance.grade
+    grade.total_score = grade.calculate_total()
+    if grade.total_score is not None:
+        grade.letter_grade, grade.gpa_value = grade.assign_letter_grade()
+    else:
+        grade.letter_grade = None
+        grade.gpa_value = None
+    grade.save(update_fields=["total_score", "letter_grade", "gpa_value"])
+
