@@ -30,6 +30,7 @@ class DeanViewTest(TestCase):
         # 3. Dekan profilini oluşturma
         self.dean = Dean.objects.create(
             user=self.user,
+            full_name="Test Dean",
             faculty=self.faculty
         )
 
