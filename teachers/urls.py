@@ -21,10 +21,10 @@ urlpatterns = [
 
     # Ders yönetimi
     path('courses/', views.course_management, name='course_management'),
-    path('courses/<int:course_id>/attendance/', views.attendance_management, name='attendance_management'),
-    path('courses/<int:course_id>/components/', views.manage_components, name='manage_components'),
-    path("courses/<int:course_id>/learning-outcomes/", views.manage_learning_outcomes, name="manage_learning_outcomes"),
-    path('courses/<int:course_id>/grades/', views.manage_grades, name='manage_grades'),
+    path('courses/<int:offering_id>/attendance/', views.attendance_management, name='attendance_management'),
+    path('courses/<int:offering_id>/components/', views.manage_components, name='manage_components'),
+    path("courses/<int:offering_id>/learning-outcomes/", views.manage_learning_outcomes, name="manage_learning_outcomes"),
+    path('courses/<int:offering_id>/grades/', views.manage_grades, name='manage_grades'),
 
 
 

@@ -1,4 +1,5 @@
 import os
+from django.db.models import Q
 import tempfile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -20,7 +21,7 @@ def dekan_dashboard(request):
         return redirect("login")
 
     username = request.session.get("username")
-    dean = Dean.objects.filter(user__username=username).select_related("faculty").first()
+    dean = Dean.objects.filter(teacher__user__username=username).select_related("faculty").first()
     if not dean:
         messages.error(request, "Dekan profili bulunamadı.")
         return redirect("login")
@@ -129,7 +130,7 @@ def student_list(request):
         return redirect("login")
 
     username = request.session.get("username")
-    dean = Dean.objects.filter(user__username=username).select_related("faculty").first()
+    dean = Dean.objects.filter(teacher__user__username=username).select_related("faculty").first()
     if not dean:
         messages.error(request, "Dekan profili bulunamadı.")
         return redirect("login")
@@ -140,14 +141,13 @@ def student_list(request):
     qs = (
         Student.objects
         .filter(departments__faculty=dean.faculty)
-        .select_related("advisor", "student_level")
-        .prefetch_related("departments")
         .distinct()
     )
 
     if dept_id:
         qs = qs.filter(departments__id=dept_id)
 
+    
     if q:
         qs = qs.filter(
             Q(user__first_name__icontains=q)
@@ -169,6 +169,7 @@ def student_list(request):
         "department_stats": [],
         "total_outcomes": ProgramOutcome.objects.filter(department__faculty=dean.faculty).count(),
     }
+    print("STUDENT COUNT:", qs.count())
 
     return render(request, "dean/dashboard.html", context)
 

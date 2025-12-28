@@ -1,19 +1,24 @@
 from django.db import models
 from accounts.models import SimpleUser
 
-
 class Dean(models.Model):
-    user = models.OneToOneField(SimpleUser, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=100)
+    teacher = models.OneToOneField(
+        "teachers.Teacher",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="dean_role"
+    )
     faculty = models.ForeignKey(
         'faculty.Faculty',
         on_delete=models.CASCADE,
-        related_name='dean_users'
+        related_name='dean'
     )
 
     def __str__(self):
-        return f"{self.full_name} ({self.faculty.full_name})"
-
+        if self.teacher:
+            return f"{self.teacher.full_name} ({self.faculty.full_name})"
+        return f"(Teacher atanmadı) - {self.faculty.full_name}"
 
 
 class FacultySettings(models.Model):
