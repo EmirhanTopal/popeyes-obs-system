@@ -2,7 +2,7 @@ name: CI-CD Pipeline
 
 on:
   push:
-    branches: [ "main","test" ]
+    branches: [ "main","test","test-2" ]
   pull_request:
 
 permissions:
@@ -27,5 +27,14 @@ jobs:
       - name: Bağımlılıkları yükle
         run: pip install -r requirements.txt
 
-      - name: Testleri çalıştır
+      - name: Account Testlerini çalıştır
         run: python manage.py test accounts
+
+      - name: Dean Testlerini çalıştır
+        run: python manage.py test dean
+
+      - name: Hod Testlerini çalıştır
+        run: python manage.py test hod
+
+      - name: Students Testlerini çalıştır
+        run: python manage.py test students
