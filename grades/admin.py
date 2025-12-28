@@ -1,3 +1,4 @@
+from urllib import request
 from django.contrib import admin
 from .models import Grade, GradeComponent, LetterGradeScale
 
@@ -43,6 +44,10 @@ class GradeAdmin(admin.ModelAdmin):
         }),
     )
 
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        form.instance.save()
+
 
 # ================================
 # LETTER GRADE SCALE ADMIN
@@ -64,3 +69,5 @@ class GradeComponentAdmin(admin.ModelAdmin):
     list_display = ("grade", "component", "score")
     search_fields = ("grade__student__username", "component__type")
     list_filter = ("component__type",)
+
+

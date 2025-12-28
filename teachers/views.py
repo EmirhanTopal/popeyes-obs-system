@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from accounts.models import SimpleUser
+from django.db import models
+from grades.models import Grade, GradeComponent   
 from courses.models import (
     Course,
     CourseAssessmentComponent,
@@ -25,6 +27,7 @@ from outcomes.services import (
     compute_student_learning_outcomes,
     compute_student_program_outcomes, compute_and_save_student_program_outcomes
 )
+
 
 def teacher_dashboard(request):
 
@@ -345,13 +348,11 @@ def manage_components(request, offering_id):
 
     course = offering.course
 
-    from django.db.models import Prefetch
-
     components = CourseAssessmentComponent.objects.filter(offering=offering).prefetch_related(
         Prefetch("learning_relations", queryset=ComponentLearningRelation.objects.select_related("learning_outcome"))
     ).order_by("type")
 
-    learning_outcomes = LearningOutcome.objects.filter(offering=offering)
+    learning_outcomes = LearningOutcome.objects.filter(course=offering.course)
     program_outcomes = ProgramOutcome.objects.all()
 
     if request.method == "POST":
@@ -473,7 +474,7 @@ def manage_learning_outcomes(request, offering_id):
     course = offering.course
 
     # ✅ DOĞRU SORGU
-    outcomes = LearningOutcome.objects.filter(offering=offering)
+    outcomes = LearningOutcome.objects.filter(course=offering.course)
 
     if request.method == "POST":
         code = request.POST.get("code")
@@ -481,7 +482,7 @@ def manage_learning_outcomes(request, offering_id):
 
         if code and description:
             LearningOutcome.objects.create(
-                offering=offering,
+                course=offering.course,
                 code=code,
                 description=description
             )
@@ -508,10 +509,7 @@ def manage_grades(request, offering_id):
         messages.error(request, "Öğretmen profili bulunamadı.")
         return redirect("login")
 
-    # Ders bileşenleri
-    components = CourseAssessmentComponent.objects.filter(offering=offering).order_by("type")
-
-    # Derse kayıtlı öğrenciler
+    # ✅ ÖNCE offering
     offering = get_object_or_404(
         CourseOffering,
         id=offering_id,
@@ -520,6 +518,11 @@ def manage_grades(request, offering_id):
     )
 
     course = offering.course
+
+    # ✅ SONRA components
+    components = CourseAssessmentComponent.objects.filter(
+        offering=offering
+    ).order_by("type")
 
     enrollments = Enrollment.objects.filter(
         offering=offering,
@@ -531,9 +534,10 @@ def manage_grades(request, offering_id):
             for comp in components:
                 field_name = f"grade_{enrollment.id}_{comp.id}"
                 score = request.POST.get(field_name)
+
                 if score is not None and score.strip() != "":
                     score = float(score)
-                    grade, created = CourseGrade.objects.get_or_create(
+                    grade, _ = CourseGrade.objects.get_or_create(
                         enrollment=enrollment,
                         component=comp
                     )
@@ -549,7 +553,10 @@ def manage_grades(request, offering_id):
         enrollment__offering=offering
     )
 
-    grade_map = {(int(g.enrollment_id), int(g.component_id)): float(g.score) for g in grades}
+    grade_map = {
+        (int(g.enrollment_id), int(g.component_id)): float(g.score)
+        for g in grades
+    }
 
     return render(request, "teachers/manage_grades.html", {
         "course": course,

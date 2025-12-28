@@ -80,31 +80,6 @@ class CourseGrade(models.Model):
     def __str__(self):
         return f"{self.enrollment.student} - {self.component.type} - {self.score}"
 
-class CourseAssessmentComponent(models.Model):
-    COMPONENT_TYPES = [
-        ("MIDTERM", "Vize"),
-        ("FINAL", "Final"),
-        ("ASSIGNMENT", "Ödev"),
-        ("ATTENDANCE", "Devam"),
-        ("QUIZ", "Quiz"),
-        ("PROJECT", "Proje"),
-    ]
-
-    course = models.ForeignKey(
-        Course,
-        on_delete=models.CASCADE,
-        related_name="components",
-    )
-
-    type = models.CharField(max_length=20, choices=COMPONENT_TYPES)
-    weight = models.PositiveSmallIntegerField()
-
-    class Meta:
-        ordering = ["course", "type"]
-
-    def __str__(self):
-        return f"{self.course.code} - {self.get_type_display()} (%{self.weight})"
-
 
 class CourseOffering(models.Model):
     SEMESTER_CHOICES = [
@@ -152,6 +127,44 @@ class CourseOffering(models.Model):
             raise ValidationError(
                 {"max_students": _("Kontenjan pozitif olmalıdır.")}
             )
+        
+
+class CourseAssessmentComponent(models.Model):
+    COMPONENT_TYPES = [
+        ("MIDTERM", "Vize"),
+        ("FINAL", "Final"),
+        ("ASSIGNMENT", "Ödev"),
+        ("ATTENDANCE", "Devam"),
+        ("QUIZ", "Quiz"),
+        ("PROJECT", "Proje"),
+    ]
+
+    offering = models.ForeignKey(
+        CourseOffering,
+        on_delete=models.CASCADE,
+        related_name="assessment_components"
+    )
+
+    type = models.CharField(max_length=20, choices=COMPONENT_TYPES)
+    weight = models.PositiveSmallIntegerField()
+    def clean(self):
+        total = (
+            CourseAssessmentComponent.objects
+            .filter(offering=self.offering)
+            .exclude(pk=self.pk)
+            .aggregate(models.Sum("weight"))["weight__sum"] or 0
+        )
+
+        if total + self.weight > 100:
+            raise ValidationError("Toplam ağırlık %100'ü geçemez.")
+
+
+    class Meta:
+        ordering = ["offering", "type"]
+
+    def __str__(self):
+        return f"{self.offering.course.code} - {self.get_type_display()} (%{self.weight})"
+
 
 
 class DayOfWeek(models.TextChoices):
