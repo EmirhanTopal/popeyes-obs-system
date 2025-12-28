@@ -11,7 +11,7 @@
 
         {% if student %}
 
-            {% if student.courses.all %}
+            {% if enrollments %}
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
@@ -24,10 +24,10 @@
                         {% for enrollment in enrollments %}
                         <tr>
                             <!-- Ders kodu -->
-                            <td>{{ enrollment.course.code }}</td>
+                            <td>{{ enrollment.offering.course.code }}</td>
 
                             <!-- Ders adı -->
-                            <td>{{ enrollment.course.name }}</td>
+                            <td>{{ enrollment.offering.course.name }}</td>
 
                             <!-- Component + Notlar -->
                             <td>

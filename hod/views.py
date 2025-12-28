@@ -4,7 +4,7 @@ from departments.models import DepartmentCourse, DepartmentStatistic
 from teachers.models import Teacher
 from hod.models import Head
 from students.models import Student
-from courses.models import Course, CourseOffering, CourseAssessmentComponent
+from courses.models import Course, CourseOffering, CourseAssessmentComponent, Enrollment
 from courses.models import Course, CourseOffering
 from academics.models import Level
 from django.contrib import messages
@@ -21,7 +21,7 @@ def dashboard(request):
 
     username = request.session.get("username")
     hod = Head.objects.filter(
-        head_user__username=username,
+        teacher__user__username=username,
         is_active=True
     ).select_related("department").first()
 
@@ -42,12 +42,18 @@ def dashboard(request):
     teacher_count = teachers.count()
 
 
-    student_count = (
-    Student.objects
-    .filter(courses__in=course_list)
-    .distinct()
-    .count()
-)
+    course_ids = course_list.values_list("id", flat=True)
+
+    student_ids = (
+        Enrollment.objects
+        .filter(offering__course_id__in=course_ids)
+        .values_list("student_id", flat=True)
+    )
+
+    student_count = Student.objects.filter(id__in=student_ids).distinct().count()
+
+
+
 
 
     return render(request, "hod/dashboard.html", {
@@ -70,7 +76,7 @@ def create_course(request):
 
     username = request.session.get("username")
     hod = Head.objects.filter(
-        head_user__username=username,
+        teacher__user__username=username,
         is_active=True
     ).select_related("department").first()
 
@@ -127,12 +133,23 @@ def create_course(request):
             course.prerequisites.set(prereq_ids)
 
             # -----------------------------
+            # COURSE OFFERING OLUŞTUR ve ÖĞRETMEN ATAMASI
+            # -----------------------------
+            offering = CourseOffering.objects.create(
+                course=course,
+                semester=semester,
+                year=timezone.now().year,
+                is_active=True,
+            )
+
+            # -----------------------------
             # ÖĞRETMEN ATAMASI
             # -----------------------------
             teacher_ids = request.POST.getlist("teachers")
             for t_id in teacher_ids:
                 teacher = Teacher.objects.get(id=t_id)
-                course.teachers.add(teacher)
+                
+                offering.instructors.add(teacher)
 
                 TeacherCourseAssignment.objects.get_or_create(
                     teacher=teacher,
@@ -165,7 +182,7 @@ def add_existing_course(request):
         return redirect("login")
 
     username = request.session.get("username")
-    hod = Head.objects.filter(head_user__username=username, is_active=True).first()
+    hod = Head.objects.filter(teacher__user__username=username, is_active=True).first()
 
     if not hod:
         return redirect("hod:dashboard")
@@ -207,7 +224,7 @@ def course_detail(request, course_id):
 
     username = request.session.get("username")
     hod = Head.objects.filter(
-        head_user__username=username,
+        teacher__user__username=username,
         is_active=True
     ).select_related("department").first()
 
@@ -253,7 +270,7 @@ def course_edit(request, pk):
 
     username = request.session.get("username")
     hod = Head.objects.filter(
-        head_user__username=username,
+        teacher__user__username=username,
         is_active=True
     ).select_related("department").first()
 
@@ -344,7 +361,7 @@ def delete_course(request, pk):
 
     username = request.session.get("username")
     hod = Head.objects.filter(
-        head_user__username=username,
+        teacher__user__username=username,
         is_active=True
     ).select_related("department").first()
 
@@ -359,6 +376,8 @@ def delete_course(request, pk):
         return redirect("hod:dashboard")
 
     course = dept_course.course  # Silinecek asıl ders nesnesi
+
+    CourseOffering.objects.filter(course=course).update(is_active=False)
 
     # -----------------------------
     # İlgili öğretmen atamalarını kaldır
@@ -375,7 +394,10 @@ def delete_course(request, pk):
     # -----------------------------
     dept_course.delete()
 
-    messages.success(request, "Ders ve ilgili öğretmen atamaları başarıyla silindi.")
+    messages.success(
+        request,
+        "Ders pasif hale getirildi. Geçmiş kayıtlar korunmuştur."
+    )
     return redirect("hod:dashboard")
 
 # ============================================================
@@ -387,7 +409,7 @@ def add_offering(request, course_id):
 
     username = request.session.get("username")
     hod = Head.objects.filter(
-        head_user__username=username,
+        teacher__user__username=username,
         is_active=True
     ).select_related("department").first()
 
@@ -428,7 +450,7 @@ def teacher_detail(request, pk):
 
     username = request.session.get("username")
     hod = Head.objects.filter(
-        head_user__username=username,
+        teacher__user__username=username,
         is_active=True
     ).select_related("department").first()
 

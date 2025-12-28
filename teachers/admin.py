@@ -1,5 +1,21 @@
 from django.contrib import admin
 from .models import Teacher, TeacherSchedule, OfficeHour
+from hod.models import Head
+from dean.models import Dean
+
+
+
+class HeadInline(admin.StackedInline):
+    model = Head
+    extra = 0
+    autocomplete_fields = ("department",)
+
+
+class DeanInline(admin.StackedInline):
+    model = Dean
+    extra = 0
+    autocomplete_fields = ("faculty",)
+
 
 
 # =====================================================
@@ -51,7 +67,6 @@ class TeacherAdmin(admin.ModelAdmin):
         "department__name",
     )
 
-    # ❗ SimpleUser'da last_name alanı yok→ ordering user__username yapılmalı
     ordering = ("department", "user__username")
 
     readonly_fields = ("created_at", "updated_at")
@@ -71,9 +86,13 @@ class TeacherAdmin(admin.ModelAdmin):
         }),
     )
 
-    inlines = [TeacherScheduleInline, OfficeHourInline]
+    inlines = [
+        HeadInline,
+        DeanInline,
+        TeacherScheduleInline,
+        OfficeHourInline,
+    ]
 
-    # user ve department alanları admin aramasında hızlı bulunsun
     autocomplete_fields = ("user", "department")
 
 

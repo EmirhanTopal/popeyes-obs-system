@@ -7,44 +7,28 @@ from django.contrib.auth import get_user_model
 from teachers.models import Teacher
 
 class Head(models.Model):
-    head_user = models.OneToOneField(SimpleUser, on_delete=models.CASCADE, related_name="head_profile")
-    department = models.OneToOneField(Department, on_delete=models.CASCADE, related_name="head")
-    teacher_profile = models.OneToOneField(
+    teacher = models.OneToOneField(
         Teacher,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="head_role",
-        help_text="Bu kullanıcı aynı zamanda öğretim görevlisiyse atanabilir."
+        on_delete=models.CASCADE,
+        related_name="head_role"
+    )
+
+    department = models.OneToOneField(
+        Department,
+        on_delete=models.CASCADE,
+        related_name="head"
     )
 
     start_date = models.DateField(auto_now_add=True)
     end_date = models.DateField(null=True, blank=True)
-
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        verbose_name = "Bölüm Başkanı"
-        verbose_name_plural = "Bölüm Başkanları"
-        ordering = ["department"]
-
     def __str__(self):
-        return f"{self.head_user.get_full_name()} — {self.department.name}"
+        return f"{self.teacher.full_name} - {self.department.name}"
 
-    @property
-    def full_name(self):
-        return self.head_user.get_full_name()
-
-    @property
-    def email(self):
-        return self.head_user.email
-
-    @property
-    def active_since(self):
-        return f"{self.start_date} tarihinden beri aktif."
 
 
 class TeacherCourseAssignment(models.Model):

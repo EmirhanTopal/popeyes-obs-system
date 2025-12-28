@@ -1,5 +1,6 @@
 from django.db import models
 from departments.models import Department
+from courses.models import CourseOffering
 
 class ProgramOutcome(models.Model):
     department = models.ForeignKey(
@@ -23,13 +24,43 @@ class ProgramOutcome(models.Model):
 # LEARNING OUTCOME
 # ============================================================
 class LearningOutcome(models.Model):
+
+    BLOOM_LEVELS = [
+        ("REMEMBER", "Remember"),
+        ("UNDERSTAND", "Understand"),
+        ("APPLY", "Apply"),
+        ("ANALYZE", "Analyze"),
+        ("EVALUATE", "Evaluate"),
+        ("CREATE", "Create"),
+    ]
+
     course = models.ForeignKey(
         "courses.Course",
         on_delete=models.CASCADE,
-        related_name="course_learning_outcomes"
+        related_name="learning_outcomes"
     )
-    code = models.CharField(max_length=20, verbose_name="Kodu (ör: LO1)")
-    description = models.TextField(verbose_name="Açıklama")
+
+    code = models.CharField(
+        max_length=20,
+        verbose_name="Kodu (ör: LO1)"
+    )
+
+    description = models.TextField(
+        verbose_name="Açıklama"
+    )
+
+    bloom_level = models.CharField(
+        max_length=20,
+        choices=BLOOM_LEVELS,
+        default="REMEMBER"
+    )
+
+    order = models.PositiveIntegerField(
+        default=1
+    )
+
+    class Meta:
+        ordering = ["order"]
 
     def __str__(self):
         return f"{self.course.code} - {self.code}"

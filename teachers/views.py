@@ -7,8 +7,9 @@ from courses.models import (
     ComponentLearningProgramRelation,
     ComponentLearningRelation,
     LearningProgramRelation,
-    CourseEnrollment,
-    CourseGrade
+    Enrollment,
+    CourseGrade,
+    CourseOffering
 )
 from outcomes.models import ProgramOutcome, LearningOutcome
 from students.models import Student
@@ -38,14 +39,16 @@ def teacher_dashboard(request):
         messages.error(request, "Öğretmen profili bulunamadı.")
         return redirect("login")
 
-    active_courses = teacher.courses.all()
+    active_offerings = CourseOffering.objects.filter(instructors=teacher)
+
 
     total_students = (
     Student.objects
-    .filter(courses__in=active_courses)
+    .filter(enrollments__offering__in=active_offerings)
     .distinct()
     .count()
-)
+   )
+
 
     # Yaklaşan programlar
     upcoming_schedules = teacher.schedules.all().order_by("day_of_week", "start_time")[:5]
@@ -54,7 +57,7 @@ def teacher_dashboard(request):
 
     context = {
         "teacher": teacher,
-        "active_courses": active_courses,
+        "active_offering": active_offerings,
         "total_students": total_students,
         "upcoming_schedules": upcoming_schedules,
         "active_office_hours": active_office_hours,
@@ -285,66 +288,32 @@ def course_management(request):
         return redirect("login")
 
     # 3) Öğretmenin dersleri (ManyToMany)
-    courses = teacher.courses.filter(is_active=True)
+    active_offerings = CourseOffering.objects.filter(instructors=teacher, is_active=True)
 
     return render(request, "teachers/course_management.html", {
         "teacher": teacher,
-        "courses": courses,
+        "active_offerings": active_offerings,
     })
 
 
-def manage_learning_outcomes(request, course_id):
+def attendance_management(request, offering_id):
 
     if request.session.get("role") != "TEACHER":
         return redirect("login")
+    
+    username = request.session.get("username")
+    teacher = Teacher.objects.filter(user__username=username).first()
 
-    teacher = Teacher.objects.filter(user=request.user).first()
 
     course = get_object_or_404(
-        Course,
-        id=course_id,
-        teachers=teacher,
+        CourseOffering,
+        id=offering_id,
+        instructors=teacher,
         is_active=True
     )
 
-    from .forms import LearningOutcomeForm
-    learning_outcomes = course.learning_outcomes.all()
-
-    if request.method == "POST":
-        form = LearningOutcomeForm(request.POST)
-        if form.is_valid():
-            outcome = form.save(commit=False)
-            outcome.course = course
-            outcome.created_by = teacher
-            outcome.save()
-            messages.success(request, "Öğrenme çıktısı eklendi.")
-            return redirect("teachers:manage_learning_outcomes", course_id=course_id)
-    else:
-        form = LearningOutcomeForm()
-
-    return render(request, "teachers/learning_outcomes.html", {
-        "teacher": teacher,
-        "course": course,
-        "learning_outcomes": learning_outcomes,
-        "form": form,
-    })
-
-def attendance_management(request, course_id):
-
-    if request.session.get("role") != "TEACHER":
-        return redirect("login")
-
-    teacher = Teacher.objects.filter(user=request.user).first()
-
-    course = get_object_or_404(
-        Course,
-        id=course_id,
-        teachers=teacher,
-        is_active=True
-    )
-
-    enrollments = CourseEnrollment.objects.filter(
-        course=course,
+    enrollments = Enrollment.objects.filter(
+        offering= offering_id,
         is_active=True
     ).select_related("student")
 
@@ -355,7 +324,7 @@ def attendance_management(request, course_id):
     })
 
 
-def manage_components(request, course_id):
+def manage_components(request, offering_id):
     if not request.session.get("username"):
         messages.error(request, "Bu sayfayı görüntülemek için giriş yapmalısınız.")
         return redirect("login")
@@ -367,15 +336,22 @@ def manage_components(request, course_id):
     username = request.session.get("username")
     user = SimpleUser.objects.filter(username=username).first()
     teacher = Teacher.objects.filter(user=user).first()
-    course = get_object_or_404(Course, id=course_id, teachers=teacher)
+    offering = get_object_or_404(
+        CourseOffering,
+        id=offering_id,
+        instructors=teacher,
+        is_active=True
+    )
+
+    course = offering.course
 
     from django.db.models import Prefetch
 
-    components = CourseAssessmentComponent.objects.filter(course=course).prefetch_related(
+    components = CourseAssessmentComponent.objects.filter(offering=offering).prefetch_related(
         Prefetch("learning_relations", queryset=ComponentLearningRelation.objects.select_related("learning_outcome"))
     ).order_by("type")
 
-    learning_outcomes = LearningOutcome.objects.filter(course=course)
+    learning_outcomes = LearningOutcome.objects.filter(offering=offering)
     program_outcomes = ProgramOutcome.objects.all()
 
     if request.method == "POST":
@@ -407,7 +383,7 @@ def manage_components(request, course_id):
                 )
             else:
                 comp = CourseAssessmentComponent.objects.create(
-                    course=course, type=t, weight=w
+                    offering=offering, type=t, weight=w
                 )
             used_components.add(comp.id)
 
@@ -424,7 +400,7 @@ def manage_components(request, course_id):
                         weight=float(lw or 0.0),
                     )
 
-        CourseAssessmentComponent.objects.filter(course=course).exclude(id__in=used_components).delete()
+        CourseAssessmentComponent.objects.filter(offering=offering).exclude(id__in=used_components).delete()
 
         # ===========================================
         # 2️⃣ Program Output (LO → PO)
@@ -458,7 +434,7 @@ def manage_components(request, course_id):
         else:
             messages.success(request, "Bileşenler ve Program Output eşlemeleri kaydedildi. ✅")
 
-        return redirect("teachers:manage_components", course_id=course.id)
+        return redirect("teachers:manage_components", offering_id=offering.id)
 
     lo_po_maps = LearningProgramRelation.objects.filter(
         learning_outcome__course=course
@@ -474,34 +450,53 @@ def manage_components(request, course_id):
 
 
 
-def manage_learning_outcomes(request, course_id):
+def manage_learning_outcomes(request, offering_id):
+
     if request.session.get("role") != "TEACHER":
         return redirect("login")
 
     username = request.session.get("username")
     user = SimpleUser.objects.filter(username=username).first()
     teacher = Teacher.objects.filter(user=user).first()
-    course = get_object_or_404(Course, id=course_id, teachers=teacher)
 
-    # Düzeltildi:
-    outcomes = course.course_learning_outcomes.all()
+    if not teacher:
+        messages.error(request, "Öğretmen bulunamadı.")
+        return redirect("login")
+
+    offering = get_object_or_404(
+        CourseOffering,
+        id=offering_id,
+        instructors=teacher,
+        is_active=True
+    )
+
+    course = offering.course
+
+    # ✅ DOĞRU SORGU
+    outcomes = LearningOutcome.objects.filter(offering=offering)
 
     if request.method == "POST":
         code = request.POST.get("code")
         description = request.POST.get("description")
+
         if code and description:
-            LearningOutcome.objects.create(course=course, code=code, description=description)
+            LearningOutcome.objects.create(
+                offering=offering,
+                code=code,
+                description=description
+            )
             messages.success(request, "Learning Outcome eklendi.")
-            return redirect("teachers:manage_learning_outcomes", course_id=course.id)
+            return redirect(
+                "teachers:manage_learning_outcomes",
+                offering_id=offering.id
+            )
 
     return render(request, "teachers/manage_learning_outcomes.html", {
         "course": course,
         "outcomes": outcomes,
     })
 
-
-
-def manage_grades(request, course_id):
+def manage_grades(request, offering_id):
     if request.session.get("role") != "TEACHER":
         return redirect("login")
 
@@ -513,21 +508,22 @@ def manage_grades(request, course_id):
         messages.error(request, "Öğretmen profili bulunamadı.")
         return redirect("login")
 
-    course = get_object_or_404(
-        Course,
-        id=course_id,
-        teachers=teacher,
+    # Ders bileşenleri
+    components = CourseAssessmentComponent.objects.filter(offering=offering).order_by("type")
+
+    # Derse kayıtlı öğrenciler
+    offering = get_object_or_404(
+        CourseOffering,
+        id=offering_id,
+        instructors=teacher,
         is_active=True
     )
 
-    # Ders bileşenleri
-    components = CourseAssessmentComponent.objects.filter(course=course).order_by("type")
+    course = offering.course
 
-    # Derse kayıtlı öğrenciler
-    enrollments = CourseEnrollment.objects.filter(
-        course=course,
-        is_active=True,
-        student__courses=course
+    enrollments = Enrollment.objects.filter(
+        offering=offering,
+        status=Enrollment.Status.ENROLLED
     ).select_related("student")
 
     if request.method == "POST":
@@ -549,7 +545,10 @@ def manage_grades(request, course_id):
 
         messages.success(request, "Notlar kaydedildi ve Outcome skorları güncellendi ✅")
 
-    grades = CourseGrade.objects.filter(enrollment__course=course)
+    grades = CourseGrade.objects.filter(
+        enrollment__offering=offering
+    )
+
     grade_map = {(int(g.enrollment_id), int(g.component_id)): float(g.score) for g in grades}
 
     return render(request, "teachers/manage_grades.html", {
