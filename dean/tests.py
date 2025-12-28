@@ -1,67 +1,67 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from .models import SimpleUser, Dean
+from accounts.models import SimpleUser
+from teachers.models import Teacher
 from departments.models import Department, Faculty
-from outcomes.models import ProgramOutcome
-
+from .models import Dean
 
 class DeanViewTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-        # 1. Faculty nesnesi oluşturma
-        # HATA BURADAYDI: 'name' yerine senin modelindeki doğru alanı yazmalısın.
-        # Eğer alan adını bilmiyorsan sadece Faculty.objects.create() dene
-        # veya models.py dosene bakıp 'name' yerine ne yazdığına bak.
-        # Tahminim: 'faculty_name' veya sadece boş create.
-        try:
-            self.faculty = Faculty.objects.create(name="Mühendislik")
-        except TypeError:
-            # Eğer 'name' yoksa, parametresiz dene veya yaygın isimleri dene
-            self.faculty = Faculty.objects.create()
+        # 1. Faculty (Fakülte) Oluşturma
+        self.faculty = Faculty.objects.get_or_create()[0]
 
-            # 2. SimpleUser oluşturma
+        # 2. Department (Bölüm) Oluşturma
+        # Teacher oluştururken zorunlu olduğu için önce bölümü açıyoruz
+        self.dept = Department.objects.get_or_create(
+            code="CENG",
+            faculty=self.faculty
+        )[0]
+
+        # 3. SimpleUser (Hesap) Oluşturma
         self.user = SimpleUser.objects.create(
             username="dekan_user",
             password="123",
             role="DEAN"
         )
 
-        # 3. Dekan profilini oluşturma
-        self.dean = Dean.objects.create(
+        # 4. Teacher (Öğretmen) Oluşturma
+        # NOT NULL hatasını önlemek için 'department' ekledik
+        # AttributeError hatasını önlemek için 'full_name'i sildik
+        self.teacher = Teacher.objects.create(
             user=self.user,
-            full_name="Test Dean",
+            department=self.dept
+        )
+
+        # 5. Dean (Dekan) Profilini Oluşturma
+        self.dean = Dean.objects.create(
+            teacher=self.teacher,
             faculty=self.faculty
         )
 
-        # 4. Bölüm oluşturma (Bölüm modelinde de 'name' yerine başka bir şey olabilir)
-        # Hata almamak için şimdilik sadece code veriyoruz
-        try:
-            self.dept = Department.objects.create(
-                code="CENG",
-                name="Computer Engineering",
-                faculty=self.faculty
-            )
-        except TypeError:
-            self.dept = Department.objects.create(
-                code="CENG",
-                faculty=self.faculty
-            )
-
     def set_dean_session(self):
+        """View'daki is_dean_logged kontrolü için session ayarı"""
         session = self.client.session
         session['role'] = 'DEAN'
         session['username'] = 'dekan_user'
         session.save()
 
     def test_dean_dashboard_access(self):
-        """Dekan dashboard sayfası başarıyla yükleniyor mu?"""
+        """Dekan dashboard sayfasının başarılı erişimini test et."""
         self.set_dean_session()
-        # View fonksiyonuna göre login redirect kontrolü
+        # Url adının dean:dashboard olduğundan emin ol
         response = self.client.get(reverse('dean:dashboard'))
         self.assertEqual(response.status_code, 200)
 
     def test_unauthorized_redirect(self):
-        """Giriş yapmamış birini login'e atıyor mu?"""
+        """Giriş yapmamış dekanın login'e yönlendirildiğini doğrula."""
         response = self.client.get(reverse('dean:dashboard'))
         self.assertEqual(response.status_code, 302)
+
+    def test_student_list_view(self):
+        """Öğrenci listeleme fonksiyonunu test et."""
+        self.set_dean_session()
+        url = reverse('dean:student_list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)

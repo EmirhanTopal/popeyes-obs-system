@@ -1,45 +1,45 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from .models import Head, SimpleUser
-from departments.models import Department, Faculty, DepartmentStatistic
+from accounts.models import SimpleUser
 from teachers.models import Teacher
-from courses.models import Course, CourseOffering
-from academics.models import Level
+from departments.models import Department, Faculty, DepartmentStatistic, DepartmentCourse
+from courses.models import Course, Level
+from .models import Head
 
 
 class HODViewTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-        # 1. Altyapı Nesnelerini Güvenli Oluşturma
-        try:
-            self.faculty = Faculty.objects.get_or_create(name="Engineering")[0]
-        except:
-            self.faculty = Faculty.objects.get_or_create()[0]
-
-        try:
-            self.level = Level.objects.get_or_create(number=1, name="Undergraduate")[0]
-        except:
-            self.level = Level.objects.get_or_create(number=1)[0]
-
+        # 1. Altyapı Nesneleri
+        self.faculty = Faculty.objects.get_or_create()[0]
+        self.level = Level.objects.get_or_create(number=1, name="Lisans")[0]
         self.department = Department.objects.create(
             code="SWE",
             faculty=self.faculty
         )
 
-        # 2. HOD Kullanıcısı ve Profili
+        # 2. HOD Kullanıcısı ve Profili (Zincirleme Bağlantı)
         self.user = SimpleUser.objects.create(
             username="hod_user",
             password="123",
             role="HOD"
         )
+
+        # Head için zorunlu olan Teacher nesnesi
+        self.hod_teacher = Teacher.objects.create(
+            user=self.user,
+            department=self.department
+        )
+
+        # Head nesnesi artık teacher'a bağlı
         self.hod = Head.objects.create(
-            head_user=self.user,
+            teacher=self.hod_teacher,
             department=self.department,
             is_active=True
         )
 
-        # 3. Öğretmen Nesnesi
+        # 3. Test için başka bir Öğretmen
         self.teacher_user = SimpleUser.objects.create(
             username="teacher_user",
             role="TEACHER"
@@ -66,22 +66,18 @@ class HODViewTest(TestCase):
 
     def test_unauthorized_access_redirect(self):
         """HOD olmayan kullanıcının yönlendirildiğini test et."""
-        self.client.session.flush()  # Oturumu temizle
+        self.client.session.flush()
         url = reverse('hod:dashboard')
         response = self.client.get(url)
-        # 302 Redirect (Login sayfasına)
         self.assertEqual(response.status_code, 302)
 
     def test_course_detail_view(self):
         """Mevcut bir dersin detay sayfasının açıldığını test et."""
-        # Test için manuel bir ders oluşturuyoruz (View üzerinden değil)
         course = Course.objects.create(
             code="COMP101",
             name="Test Course",
             level=self.level
         )
-        # Bölüm dersi ilişkisi
-        from departments.models import DepartmentCourse
         dept_course = DepartmentCourse.objects.create(
             department=self.department,
             course=course,
