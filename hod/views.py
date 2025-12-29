@@ -417,6 +417,12 @@ def add_offering(request, course_id):
         return redirect("hod:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
+    offering = get_object_or_404(CourseOffering, course = course)
+
+    available_teachers = Teacher.objects.filter(
+        assignments__course=offering.course,
+        assignments__is_active=True
+    ).distinct()
 
     if request.method == "POST":
         year = request.POST.get("year")
@@ -434,12 +440,55 @@ def add_offering(request, course_id):
             location=location
         )
 
+        selected_teacher_ids = request.POST.getlist("instructors")
+        offering.instructors.set(selected_teacher_ids)
+
         messages.success(request, "Yeni ders şubesi başarıyla oluşturuldu.")
         return redirect("hod:course_detail", course_id=course.id)
 
     return render(request, "hod/add_offering.html", {
         "course": course,
+        "offering":offering,
+        "available_teachers": available_teachers    
+        
     })
+
+def edit_offering(request, id):
+    offering = get_object_or_404(CourseOffering, id=id)
+
+    available_teachers = Teacher.objects.filter(
+        assignments__course=offering.course,
+        assignments__is_active=True
+    ).distinct()
+
+    if request.method == "POST":
+        offering.year = request.POST.get("year")
+        offering.semester = request.POST.get("semester")
+        offering.section = request.POST.get("section")
+        offering.max_students = request.POST.get("max_students")
+        offering.location = request.POST.get("location")
+        offering.save()
+
+        selected_teacher_ids = request.POST.getlist("instructors")
+        offering.instructors.set(selected_teacher_ids)
+
+        messages.success(request, "Şube güncellendi.")
+        return redirect("hod:course_detail", offering.course.id)
+
+    return render(request, "hod/edit_offering.html", {
+        "offering": offering,
+        "available_teachers": available_teachers
+    })
+
+
+def delete_offering(request, id):
+    offering = get_object_or_404(CourseOffering, id=id)
+    course_id = offering.course.id
+    offering.delete()
+
+    messages.success(request, "Şube silindi.")
+    return redirect("hod:course_detail", course_id)
+
 
 # ============================================================
 # ÖĞRETMEN DETAY SAYFASI (Head tarafından görüntülenir)

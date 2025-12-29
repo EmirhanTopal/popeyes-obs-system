@@ -150,6 +150,12 @@
         <div class="tab-card">
 
           <h5 class="fw-semibold mb-3">Açılan Şubeler</h5>
+          <a href="{% url 'hod:add_offering' course.id %}"
+            class="btn btn-sm btn-primary">
+                ➕ Yeni Şube Ekle
+          </a>
+
+        
 
           <div class="table-responsive">
             <table class="table table-striped">
@@ -160,24 +166,39 @@
                   <th>Şube</th>
                   <th>Öğretim Görevlileri</th>
                   <th>Kontenjan</th>
+                  <th class="text-end">İşlemler</th>
                 </tr>
               </thead>
-              <tbody>
 
+              <tbody>
                 {% for o in offerings %}
-                  <tr>
-                    <td>{{ o.year }}</td>
-                    <td>{{ o.get_semester_display }}</td>
-                    <td>{{ o.section|default:"-" }}</td>
-                    <td>
-                      {% for t in o.instructors.all %}
-                        {{ t.full_name }}<br>
-                      {% empty %}
-                        <span class="text-muted">Atama yok</span>
-                      {% endfor %}
-                    </td>
-                    <td>{{ o.max_students }}</td>
+                    <tr>
+                        <td>{{ o.year }}</td>
+                        <td>{{ o.get_semester_display }}</td>
+                        <td>{{ o.section|default:"-" }}</td>
+                        <td>
+                        {% for t in o.instructors.all %}
+                            {{ t.full_name }}<br>
+                        {% empty %}
+                            <span class="text-muted">Atama yok</span>
+                        {% endfor %}
+                        </td>
+                        <td>{{ o.max_students }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'hod:edit_offering' o.id %}"
+                                class="btn btn-sm btn-outline-primary">
+                                ✏️
+                            </a>
+
+                            <a href="{% url 'hod:delete_offering' o.id %}"
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Bu şubeyi silmek istiyor musunuz?')">
+                                    🗑️
+                            </a>
+                        </td>
                   </tr>
+
+
                 {% empty %}
                   <tr>
                     <td colspan="5" class="text-center text-muted">

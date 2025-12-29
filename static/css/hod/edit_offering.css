@@ -1,0 +1,32 @@
+.edit-offering .card {
+    border-radius: 12px;
+}
+
+.edit-offering .card-header {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.edit-offering label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #495057;
+}
+
+.edit-offering input,
+.edit-offering select {
+    border-radius: 8px;
+}
+
+.edit-offering hr {
+    margin: 1.5rem 0;
+}
+
+.edit-offering .btn-primary {
+    background: linear-gradient(45deg, #0d6efd, #3b82f6);
+    border: none;
+}
+
+.edit-offering .btn-primary:hover {
+    background: linear-gradient(45deg, #0b5ed7, #2563eb);
+}
