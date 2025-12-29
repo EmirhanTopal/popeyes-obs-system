@@ -1,0 +1,84 @@
+/* ===============================
+   SCHEDULE FORM – HOD
+   =============================== */
+
+body {
+    background-color: #f4f6f9;
+}
+
+/* MAIN CONTENT */
+.content {
+    min-height: calc(100vh - 80px);
+}
+
+/* CARD */
+.card {
+    border-radius: 14px;
+    border: none;
+}
+
+.card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #eef1f5;
+    font-size: 1.05rem;
+}
+
+/* FORM LABELS */
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+/* INPUTS */
+.form-control,
+.form-select {
+    border-radius: 10px;
+    padding: 0.55rem 0.75rem;
+    border-color: #dee2e6;
+    transition: all 0.15s ease-in-out;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+}
+
+/* HEADER INFO (COURSE NAME) */
+h5 {
+    font-size: 1.1rem;
+}
+
+.text-muted {
+    font-size: 0.85rem;
+}
+
+/* BUTTONS */
+.btn {
+    border-radius: 10px;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.9rem;
+}
+
+.btn-primary {
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+}
+
+.btn-outline-secondary:hover {
+    background-color: #f1f3f5;
+}
+
+/* HR */
+hr {
+    border-color: #e9ecef;
+    margin: 1.5rem 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

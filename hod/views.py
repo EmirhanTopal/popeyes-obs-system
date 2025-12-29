@@ -4,7 +4,7 @@ from departments.models import DepartmentCourse, DepartmentStatistic
 from teachers.models import Teacher
 from hod.models import Head
 from students.models import Student
-from courses.models import Course, CourseOffering, CourseAssessmentComponent, Enrollment
+from courses.models import Course, CourseOffering, CourseAssessmentComponent, Enrollment, CourseSchedule
 from courses.models import Course, CourseOffering
 from academics.models import Level
 from django.contrib import messages
@@ -239,7 +239,7 @@ def course_detail(request, course_id):
     course = dept_course.course
 
     # 2) Bu derse bağlı şubeleri getir
-    offerings = CourseOffering.objects.filter(course=course)
+    offerings = CourseOffering.objects.filter(course=course).prefetch_related("schedules")
 
     # 3) Önkoşul dersleri ve mevcut öğretmen atamalarını al
     all_courses = Course.objects.exclude(id=course.id)
@@ -519,3 +519,54 @@ def teacher_detail(request, pk):
         "teacher": teacher,
         "assigned_courses": assigned_courses,
     })
+
+def add_schedule(request, offering_id):
+    offering = get_object_or_404(CourseOffering, id=offering_id)
+
+    day_choices = CourseSchedule._meta.get_field('day').choices
+
+    if request.method == "POST":
+        CourseSchedule.objects.create(
+            offering=offering,
+            day=request.POST.get("day"),
+            start_time=request.POST.get("start_time"),
+            end_time=request.POST.get("end_time"),
+            place=request.POST.get("place"),
+        )
+        messages.success(request, "Ders programı eklendi.")
+        return redirect("hod:course_detail", offering.course.id)
+
+    return render(request, "hod/add_schedule.html", {
+        "offering": offering,
+        "day_choices": day_choices
+    })
+
+def edit_schedule(request, id):
+    schedule = get_object_or_404(CourseSchedule, id=id)
+
+    day_choices = CourseSchedule._meta.get_field('day').choices
+
+    if request.method == "POST":
+        schedule.day = request.POST.get("day")
+        schedule.start_time = request.POST.get("start_time")
+        schedule.end_time = request.POST.get("end_time")
+        schedule.place = request.POST.get("place")
+        schedule.save()
+
+        messages.success(request, "Ders programı güncellendi.")
+        return redirect("hod:course_detail", schedule.offering.course.id)
+
+    return render(request, "hod/edit_schedule.html", {
+        "schedule": schedule,
+        "day_choices": day_choices
+    })
+
+def delete_schedule(request, id):
+    schedule = get_object_or_404(CourseSchedule, id=id)
+    course_id = schedule.offering.course.id
+
+    schedule.delete()
+    messages.success(request, "Ders programı silindi.")
+
+    return redirect("hod:course_detail", course_id)
+

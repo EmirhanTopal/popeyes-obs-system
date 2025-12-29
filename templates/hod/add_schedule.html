@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Ders Programı Ekle
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/hod/add_schedule.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="content">
+
+  <div class="container py-4" style="max-width: 900px;">
+
+    <!-- ÜST BAR -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <a href="{% url 'hod:course_detail' offering.course.id %}"
+         class="btn btn-outline-secondary btn-sm">
+        ← Ders Detayına Dön
+      </a>
+
+      <div class="text-end">
+        <h5 class="fw-bold mb-0">
+          {{ offering.course.code }} — {{ offering.course.name }}
+        </h5>
+        <small class="text-muted">
+          Şube {{ offering.section }} ·
+          {{ offering.get_semester_display }} {{ offering.year }}
+        </small>
+      </div>
+    </div>
+
+    <!-- CARD -->
+    <div class="card shadow-sm">
+      <div class="card-header fw-semibold">
+        ➕ Ders Programı Ekle
+      </div>
+
+      <div class="card-body">
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="row g-3">
+
+            <!-- GÜN -->
+            <div class="col-md-4">
+                <label class="form-label">Gün</label>
+                <select name="day" class="form-select" required>
+                    {% for key, label in day_choices %}
+                    <option value="{{ key }}" {% if schedule.day == key %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- BAŞLANGIÇ -->
+            <div class="col-md-4">
+              <label class="form-label">Başlangıç Saati</label>
+              <input type="time"
+                     name="start_time"
+                     class="form-control"
+                     required>
+            </div>
+
+            <!-- BİTİŞ -->
+            <div class="col-md-4">
+              <label class="form-label">Bitiş Saati</label>
+              <input type="time"
+                     name="end_time"
+                     class="form-control"
+                     required>
+            </div>
+
+            <!-- DERSLİK -->
+            <div class="col-md-12">
+              <label class="form-label">Derslik / Konum</label>
+              <input type="text"
+                     name="place"
+                     class="form-control"
+                     placeholder="Bina A — 203">
+            </div>
+
+          </div>
+
+          <hr>
+
+          <!-- BUTONLAR -->
+          <div class="d-flex justify-content-end">
+            <a href="{% url 'hod:course_detail' offering.course.id %}"
+               class="btn btn-outline-secondary me-2">
+              İptal
+            </a>
+            <button type="submit" class="btn btn-primary">
+              💾 Kaydet
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+
+</main>
+{% endblock %}
