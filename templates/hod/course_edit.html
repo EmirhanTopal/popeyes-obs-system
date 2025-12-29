@@ -1,22 +1,12 @@
-<!doctype html>
-<html lang="tr">
-<head>
-    <meta charset="utf-8">
-    <title>Ders Düzenle — {{ course.code }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+{% extends "base.html" %}
+{% load static %}
 
-    <style>
-        body { background: #f8f9fa; }
-        .section-title {
-            font-weight: 600;
-            margin-bottom: .5rem;
-            color: #0d6efd;
-        }
-    </style>
-</head>
-<body class="py-4">
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/hod/course_edit.css' %}">
+{% endblock %}
 
-<div class="container">
+{% block content %}
+<div class="container course-edit py-4">
 
     <!-- Geri Dön + Başlık -->
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -47,12 +37,11 @@
             <form method="post">
                 {% csrf_token %}
 
-                <!-- ========== DERS BİLGİLERİ ========== -->
-                <div class="mb-3">
+                <!-- DERS BİLGİLERİ -->
+                <div class="mb-4">
                     <div class="section-title">📘 Ders Bilgileri</div>
 
                     <div class="row g-3">
-
                         <div class="col-md-4">
                             <label class="form-label">Ders Kodu</label>
                             <input type="text" class="form-control"
@@ -68,18 +57,18 @@
 
                         <div class="col-md-3">
                             <label class="form-label">Kredi</label>
-                            <input type="number" step="0.5" name="credit" class="form-control"
-                                   value="{{ course.credit }}">
+                            <input type="number" step="0.5" name="credit"
+                                   class="form-control" value="{{ course.credit }}">
                         </div>
 
                         <div class="col-md-3">
                             <label class="form-label">AKTS</label>
-                            <input type="number" step="0.5" name="ects" class="form-control"
-                                   value="{{ course.ects }}">
+                            <input type="number" step="0.5" name="ects"
+                                   class="form-control" value="{{ course.ects }}">
                         </div>
 
                         <div class="col-md-3">
-                            <label class="form-label">Seviye (Level)</label>
+                            <label class="form-label">Seviye</label>
                             <select name="level" class="form-select">
                                 {% for lvl in level_list %}
                                     <option value="{{ lvl.id }}"
@@ -106,8 +95,8 @@
 
                 <hr>
 
-                <!-- ========== DÖNEM & ZORUNLULUK ========== -->
-                <div class="mb-3">
+                <!-- DÖNEM -->
+                <div class="mb-4">
                     <div class="section-title">📆 Dönem ve Zorunluluk</div>
 
                     <div class="row g-3">
@@ -125,8 +114,8 @@
 
                         <div class="col-md-4 d-flex align-items-end">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="is_mandatory"
-                                       id="mandatory"
+                                <input class="form-check-input" type="checkbox"
+                                       name="is_mandatory" id="mandatory"
                                        {% if dept_course.is_mandatory %}checked{% endif %}>
                                 <label class="form-check-label" for="mandatory">
                                     Zorunlu Ders
@@ -138,58 +127,63 @@
 
                 <hr>
 
-                <!-- ========== ÖĞRETİM GÖREVLİLERİ ========== -->
-                <div class="mb-3">
-                    <div class="section-title">👩‍🏫 Derse Atanan Öğretim Görevlileri</div>
-
+                <!-- ÖĞRETİM GÖREVLİLERİ -->
+                <div class="mb-4">
+                    <div class="section-title">👩‍🏫 Öğretim Görevlileri</div>
                     <select name="teachers" class="form-select" multiple size="5">
                         {% for t in teachers %}
                             <option value="{{ t.id }}"
-                                    {% if t.id in selected_teacher_ids %}selected{% endif %}>
+                                {% if t.id in selected_teacher_ids %}selected{% endif %}>
                                 {{ t.full_name }} — {{ t.get_academic_title_display }}
                             </option>
                         {% endfor %}
                     </select>
-                    <small class="text-muted">
-                        Ctrl / Cmd ile birden fazla öğretim görevlisi seçebilirsin.
-                    </small>
                 </div>
 
                 <hr>
 
-                <!-- ========== ÖNKOŞUL DERSLER ========== -->
-                <div class="mb-3">
+                <!-- ÖNKOŞULLAR -->
+                <div class="mb-4">
                     <div class="section-title">📗 Önkoşullu Dersler</div>
+                    <select name="prerequisites" class="form-select js-toggle-select" multiple size="5">
 
-                    <select name="prerequisites" class="form-select" multiple size="5">
                         {% for c in all_courses %}
                             <option value="{{ c.id }}"
-                                    {% if c.id in current_prereq_ids %}selected{% endif %}>
+                                {% if c.id in current_prereq_ids %}selected{% endif %}>
                                 {{ c.code }} — {{ c.name }}
                             </option>
                         {% endfor %}
                     </select>
-                    <small class="text-muted">
-                        Ctrl / Cmd ile birden fazla ders seçebilirsin. Boş bırakırsan önkoşul olmayacak.
-                    </small>
                 </div>
 
                 <hr>
 
                 <!-- BUTONLAR -->
-                <button class="btn btn-primary">
-                    💾 Kaydet
-                </button>
-                <a href="{% url 'hod:course_detail' dept_course.id %}"
-                   class="btn btn-outline-secondary ms-2">
-                    İptal
-                </a>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary">💾 Kaydet</button>
+                    <a href="{% url 'hod:course_detail' dept_course.id %}"
+                       class="btn btn-outline-secondary">
+                        İptal
+                    </a>
+                </div>
             </form>
 
         </div>
     </div>
 
-</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const select = document.querySelector(".js-toggle-select");
 
-</body>
-</html>
+    select.addEventListener("mousedown", function (e) {
+        if (e.target.tagName === "OPTION") {
+            e.preventDefault();
+            e.target.selected = !e.target.selected;
+        }
+    });
+});
+</script>
+
+
+</div>
+{% endblock %}
