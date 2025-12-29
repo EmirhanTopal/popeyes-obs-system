@@ -1,0 +1,26 @@
+/* Sayfa genel alanı */
+.course-edit {
+    background: transparent;
+}
+
+/* Bölüm başlıkları */
+.course-edit .section-title {
+    font-weight: 600;
+    margin-bottom: .5rem;
+    color: #0d6efd;
+}
+
+/* Card başlığı */
+.course-edit .card-header {
+    background: #f1f5ff;
+}
+
+/* Form spacing */
+.course-edit hr {
+    margin: 1.5rem 0;
+}
+
+/* Select multiple daha temiz görünsün */
+.course-edit select[multiple] {
+    min-height: 140px;
+}

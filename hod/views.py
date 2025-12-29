@@ -4,7 +4,7 @@ from departments.models import DepartmentCourse, DepartmentStatistic
 from teachers.models import Teacher
 from hod.models import Head
 from students.models import Student
-from courses.models import Course, CourseOffering, CourseAssessmentComponent, Enrollment
+from courses.models import Course, CourseOffering, CourseAssessmentComponent, Enrollment, CourseSchedule
 from courses.models import Course, CourseOffering
 from academics.models import Level
 from django.contrib import messages
@@ -239,7 +239,7 @@ def course_detail(request, course_id):
     course = dept_course.course
 
     # 2) Bu derse bağlı şubeleri getir
-    offerings = CourseOffering.objects.filter(course=course)
+    offerings = CourseOffering.objects.filter(course=course).prefetch_related("schedules")
 
     # 3) Önkoşul dersleri ve mevcut öğretmen atamalarını al
     all_courses = Course.objects.exclude(id=course.id)
@@ -417,6 +417,12 @@ def add_offering(request, course_id):
         return redirect("hod:dashboard")
 
     course = get_object_or_404(Course, id=course_id)
+    offering = get_object_or_404(CourseOffering, course = course)
+
+    available_teachers = Teacher.objects.filter(
+        assignments__course=offering.course,
+        assignments__is_active=True
+    ).distinct()
 
     if request.method == "POST":
         year = request.POST.get("year")
@@ -434,12 +440,55 @@ def add_offering(request, course_id):
             location=location
         )
 
+        selected_teacher_ids = request.POST.getlist("instructors")
+        offering.instructors.set(selected_teacher_ids)
+
         messages.success(request, "Yeni ders şubesi başarıyla oluşturuldu.")
         return redirect("hod:course_detail", course_id=course.id)
 
     return render(request, "hod/add_offering.html", {
         "course": course,
+        "offering":offering,
+        "available_teachers": available_teachers    
+        
     })
+
+def edit_offering(request, id):
+    offering = get_object_or_404(CourseOffering, id=id)
+
+    available_teachers = Teacher.objects.filter(
+        assignments__course=offering.course,
+        assignments__is_active=True
+    ).distinct()
+
+    if request.method == "POST":
+        offering.year = request.POST.get("year")
+        offering.semester = request.POST.get("semester")
+        offering.section = request.POST.get("section")
+        offering.max_students = request.POST.get("max_students")
+        offering.location = request.POST.get("location")
+        offering.save()
+
+        selected_teacher_ids = request.POST.getlist("instructors")
+        offering.instructors.set(selected_teacher_ids)
+
+        messages.success(request, "Şube güncellendi.")
+        return redirect("hod:course_detail", offering.course.id)
+
+    return render(request, "hod/edit_offering.html", {
+        "offering": offering,
+        "available_teachers": available_teachers
+    })
+
+
+def delete_offering(request, id):
+    offering = get_object_or_404(CourseOffering, id=id)
+    course_id = offering.course.id
+    offering.delete()
+
+    messages.success(request, "Şube silindi.")
+    return redirect("hod:course_detail", course_id)
+
 
 # ============================================================
 # ÖĞRETMEN DETAY SAYFASI (Head tarafından görüntülenir)
@@ -470,3 +519,54 @@ def teacher_detail(request, pk):
         "teacher": teacher,
         "assigned_courses": assigned_courses,
     })
+
+def add_schedule(request, offering_id):
+    offering = get_object_or_404(CourseOffering, id=offering_id)
+
+    day_choices = CourseSchedule._meta.get_field('day').choices
+
+    if request.method == "POST":
+        CourseSchedule.objects.create(
+            offering=offering,
+            day=request.POST.get("day"),
+            start_time=request.POST.get("start_time"),
+            end_time=request.POST.get("end_time"),
+            place=request.POST.get("place"),
+        )
+        messages.success(request, "Ders programı eklendi.")
+        return redirect("hod:course_detail", offering.course.id)
+
+    return render(request, "hod/add_schedule.html", {
+        "offering": offering,
+        "day_choices": day_choices
+    })
+
+def edit_schedule(request, id):
+    schedule = get_object_or_404(CourseSchedule, id=id)
+
+    day_choices = CourseSchedule._meta.get_field('day').choices
+
+    if request.method == "POST":
+        schedule.day = request.POST.get("day")
+        schedule.start_time = request.POST.get("start_time")
+        schedule.end_time = request.POST.get("end_time")
+        schedule.place = request.POST.get("place")
+        schedule.save()
+
+        messages.success(request, "Ders programı güncellendi.")
+        return redirect("hod:course_detail", schedule.offering.course.id)
+
+    return render(request, "hod/edit_schedule.html", {
+        "schedule": schedule,
+        "day_choices": day_choices
+    })
+
+def delete_schedule(request, id):
+    schedule = get_object_or_404(CourseSchedule, id=id)
+    course_id = schedule.offering.course.id
+
+    schedule.delete()
+    messages.success(request, "Ders programı silindi.")
+
+    return redirect("hod:course_detail", course_id)
+

@@ -1,205 +1,293 @@
+{% extends "base.html" %}
 {% load static %}
 
-<!doctype html>
-<html lang="tr">
-<head>
-    <meta charset="utf-8">
-    <title>{{ course.code }} — {{ course.name }}</title>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/hod/course_detail.css' %}">
+{% endblock %}
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        body { background: #f4f6f9; }
-        .tab-card { background:white; padding:25px; border-radius:10px; }
-        .info-box { background:#fff; padding:18px; border-radius:8px; margin-bottom:20px; }
-        .label { font-weight:600; color:#444; }
-    </style>
-</head>
-
-<body class="py-4">
-<div class="container">
+{% block content %}
+<main class="content hod-course-detail">
+  <div class="container hod-course-detail py-4">
 
     <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold">
-            <a href="{% url 'hod:dashboard' %}" class="btn btn-sm btn-light me-2">← Ders Listesi</a>
-            {{ course.code }} — {{ course.name }}
-        </h4>
-
-        <!-- Düzenleme Sayfasına Gider -->
-        <a href="{% url 'hod:course_edit' course.id %}" class="btn btn-primary btn-sm">
-            ✏️ Düzenle
+      <h4 class="fw-bold mb-0">
+        <a href="{% url 'hod:dashboard' %}"
+           class="btn btn-sm btn-light me-2">
+          ← Ders Listesi
         </a>
+        {{ course.code }} — {{ course.name }}
+      </h4>
+
+      <a href="{% url 'hod:course_edit' course.id %}"
+         class="btn btn-primary btn-sm">
+        ✏️ Düzenle
+      </a>
     </div>
 
     <!-- TABS -->
     <ul class="nav nav-tabs mb-4">
-        <li class="nav-item">
-            <a class="nav-link active" data-bs-toggle="tab" href="#tab-info">Ders Bilgileri</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#tab-offerings">Açılan Şubeler</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#tab-schedule">Ders Programı</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#tab-content">Haftalık İçerik</a>
-        </li>
+      <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-info">
+          Ders Bilgileri
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-offerings">
+          Açılan Şubeler
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-schedule">
+          Ders Programı
+        </button>
+      </li>
     </ul>
 
     <div class="tab-content">
 
-        <!-- ========== TAB 1 – COURSE INFO ========== -->
-        <div class="tab-pane fade show active" id="tab-info">
-            <div class="tab-card">
+      <!-- ================= TAB 1 : COURSE INFO ================= -->
+      <div class="tab-pane fade show active" id="tab-info">
+        <div class="tab-card">
 
-                <!-- Ders Bilgileri -->
-                <div class="info-box">
-                    <h5 class="fw-semibold mb-3">Temel Bilgiler</h5>
+          <!-- BASIC INFO -->
+          <div class="info-box mb-4">
+            <h5 class="fw-semibold mb-3">Temel Bilgiler</h5>
 
-                    <div class="row g-3">
-                        
-                        <div class="col-md-6">
-                            <div class="label">Ders Adı</div>
-                            <div>{{ course.name }}</div>
-                        </div>
+            <div class="row g-3">
 
-                        <div class="col-md-3">
-                            <div class="label">Kredi</div>
-                            <div>{{ course.credit }}</div>
-                        </div>
+              <div class="col-md-6">
+                <div class="label">Ders Adı</div>
+                <div>{{ course.name }}</div>
+              </div>
 
-                        <div class="col-md-3">
-                            <div class="label">AKTS</div>
-                            <div>{{ course.ects }}</div>
-                        </div>
+              <div class="col-md-3">
+                <div class="label">Kredi</div>
+                <div>{{ course.credit }}</div>
+              </div>
 
-                        <div class="col-md-3">
-                            <div class="label">Ders Türü</div>
-                            <div>{{ course.get_course_type_display }}</div>
-                        </div>
+              <div class="col-md-3">
+                <div class="label">AKTS</div>
+                <div>{{ course.ects }}</div>
+              </div>
 
-                        <div class="col-md-3">
-                            <div class="label">Seviye (Level)</div>
-                            <div>{{ course.level.name }}</div>
-                        </div>
+              <div class="col-md-3">
+                <div class="label">Ders Türü</div>
+                <div>{{ course.get_course_type_display }}</div>
+              </div>
 
-                        <div class="col-md-3">
-                            <div class="label">Dönem</div>
-                            <div>{{ course.semester }}. Dönem</div>
-                        </div>
+              <div class="col-md-3">
+                <div class="label">Seviye</div>
+                <div>{{ course.level.name }}</div>
+              </div>
 
-                    </div>
-                </div>
+              <div class="col-md-3">
+                <div class="label">Dönem</div>
+                <div>{{ course.semester }}. Dönem</div>
+              </div>
 
-                <!-- Öğretim Görevlileri -->
-                <h5 class="mt-4">Derse Atanan Öğretim Görevlileri</h5>
+            </div>
+          </div>
 
-{% if assigned_teachers %}
-    <ul class="list-group mb-3">
-        {% for a in assigned_teachers %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
+          <!-- ASSIGNED TEACHERS -->
+          <h5 class="fw-semibold mt-4 mb-3">
+            Derse Atanan Öğretim Görevlileri
+          </h5>
+
+          {% if assigned_teachers %}
+            <ul class="list-group mb-4">
+              {% for a in assigned_teachers %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
                     <strong>{{ a.teacher.full_name }}</strong>
                     <span class="text-muted">
-                        — {{ a.teacher.get_academic_title_display }}
+                      — {{ a.teacher.get_academic_title_display }}
                     </span><br>
                     <small class="text-muted">
-                        {{ a.teacher.department.name }}
+                      {{ a.teacher.department.name }}
                     </small>
-                </div>
+                  </div>
 
-                <span class="badge bg-light text-muted">
+                  <span class="badge bg-light text-muted">
                     {{ a.semester }}. Dönem · {{ a.year }}
-                </span>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p class="text-muted mb-3">
-        Bu derse atanmış öğretim görevlisi yok.
-    </p>
-{% endif %}
+                  </span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted mb-4">
+              Bu derse atanmış öğretim görevlisi yok.
+            </p>
+          {% endif %}
 
+          <!-- PREREQUISITES -->
+          <div class="info-box">
+            <h5 class="fw-semibold mb-3">Önkoşullu Dersler</h5>
 
-                <!-- Önkoşullar -->
-                <div class="info-box">
-                    <h5 class="fw-semibold mb-3">Önkoşullu Dersler</h5>
-
-                    {% if course.prerequisites.all %}
+            {% if course.prerequisites.all %}
+              <ul class="mb-0">
                 {% for p in course.prerequisites.all %}
-                    <li>{{ p.code }} — {{ p.name }}</li>
+                  <li>{{ p.code }} — {{ p.name }}</li>
                 {% endfor %}
+              </ul>
             {% else %}
-                <p class="text-muted">Bu dersin önkoşulu yok.</p>
+              <p class="text-muted mb-0">
+                Bu dersin önkoşulu yok.
+              </p>
             {% endif %}
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ================= TAB 2 : OFFERINGS ================= -->
+      <div class="tab-pane fade" id="tab-offerings">
+        <div class="tab-card">
+
+          <h5 class="fw-semibold mb-3">Açılan Şubeler</h5>
+          <a href="{% url 'hod:add_offering' course.id %}"
+            class="btn btn-sm btn-primary">
+                ➕ Yeni Şube Ekle
+          </a>
+
+        
+
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Yıl</th>
+                  <th>Dönem</th>
+                  <th>Şube</th>
+                  <th>Öğretim Görevlileri</th>
+                  <th>Kontenjan</th>
+                  <th class="text-end">İşlemler</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {% for o in offerings %}
+                    <tr>
+                        <td>{{ o.year }}</td>
+                        <td>{{ o.get_semester_display }}</td>
+                        <td>{{ o.section|default:"-" }}</td>
+                        <td>
+                        {% for t in o.instructors.all %}
+                            {{ t.full_name }}<br>
+                        {% empty %}
+                            <span class="text-muted">Atama yok</span>
+                        {% endfor %}
+                        </td>
+                        <td>{{ o.max_students }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'hod:edit_offering' o.id %}"
+                                class="btn btn-sm btn-outline-primary">
+                                ✏️
+                            </a>
+
+                            <a href="{% url 'hod:delete_offering' o.id %}"
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Bu şubeyi silmek istiyor musunuz?')">
+                                    🗑️
+                            </a>
+                        </td>
+                  </tr>
+
+
+                {% empty %}
+                  <tr>
+                    <td colspan="5" class="text-center text-muted">
+                      Henüz şube açılmamış.
+                    </td>
+                  </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ================= TAB 3 : DERS PROGRAMI ================= -->
+      <div class="tab-pane fade" id="tab-schedule">
+
+        {% if offerings %}
+          {% for offering in offerings %}
+            <div class="card mb-3 shadow-sm">
+
+              <!-- ŞUBE BAŞLIĞI -->
+              <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Şube {{ offering.section }}</strong>
+                  <span class="text-muted ms-2">
+                    ({{ offering.get_semester_display }} — {{ offering.year }})
+                  </span>
                 </div>
 
-            </div>
-        </div>
+                <a href="{% url 'hod:add_schedule' offering.id %}"
+                  class="btn btn-sm btn-outline-primary">
+                  ➕ Program Ekle
+                </a>
+              </div>
 
-        <!-- ========== TAB 2 – OFFERINGS ========== -->
-        <div class="tab-pane fade" id="tab-offerings">
-            <div class="tab-card">
+              <!-- PROGRAM TABLOSU -->
+              <div class="card-body p-0">
 
-                <h5 class="fw-semibold mb-3">Açılan Şubeler</h5>
-
-                <table class="table table-striped mt-3">
-                    <thead>
-                    <tr>
-                        <th>Yıl</th>
-                        <th>Dönem</th>
-                        <th>Şube</th>
-                        <th>Öğretim Görevlileri</th>
-                        <th>Kontenjan</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-
-                    {% for o in offerings %}
+                {% if offering.schedules.all %}
+                  <div class="table-responsive">
+                    <table class="table table-sm mb-0 align-middle">
+                      <thead class="table-light">
                         <tr>
-                            <td>{{ o.year }}</td>
-                            <td>{{ o.get_semester_display }}</td>
-                            <td>{{ o.section|default:"-" }}</td>
-                            <td>
-                                {% for t in o.instructors.all %}
-                                    {{ t.full_name }} <br>
-                                {% empty %}
-                                    <span class="text-muted">Atama yok</span>
-                                {% endfor %}
+                          <th>Gün</th>
+                          <th>Saat</th>
+                          <th>Derslik</th>
+                          <th class="text-end">İşlem</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for s in offering.schedules.all %}
+                          <tr>
+                            <td>{{ s.get_day_display }}</td>
+                            <td>{{ s.start_time }} – {{ s.end_time }}</td>
+                            <td>{{ s.place|default:"—" }}</td>
+                            <td class="text-end">
+                              <a href="{% url 'hod:edit_schedule' s.id %}"
+                                class="btn btn-sm btn-outline-secondary">
+                                Düzenle
+                              </a>
+                              <a href="{% url 'hod:delete_schedule' s.id %}"
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Bu ders programını silmek istiyor musunuz?')">
+                                🗑️
+                              </a>
                             </td>
-                            <td>{{ o.max_students }}</td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center text-muted">Henüz şube açılmamış.</td>
-                        </tr>
-                    {% endfor %}
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                {% else %}
+                  <div class="p-3 text-muted">
+                    Bu şube için henüz ders programı tanımlanmamış.
+                  </div>
+                {% endif %}
 
-                    </tbody>
-                </table>
-
+              </div>
             </div>
-        </div>
+          {% endfor %}
+        {% else %}
+          <div class="tab-card text-muted">
+            Bu derse ait henüz şube bulunmuyor.
+          </div>
+        {% endif %}
 
-        <!-- PROGRAM & CONTENT TABS OPSİYONEL -->
-        <div class="tab-pane fade" id="tab-schedule">
-            <div class="tab-card text-muted">
-                Program özelliği henüz eklenmedi.
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="tab-content">
-            <div class="tab-card text-muted">
-                Haftalık içerik henüz eklenmedi.
-            </div>
-        </div>
+      </div>
 
     </div>
 
-</div>
+  </div>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+{% endblock %}

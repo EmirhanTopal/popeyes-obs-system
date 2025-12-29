@@ -9,7 +9,7 @@ class ProgramOutcome(models.Model):
         related_name="program_outcomes",
         verbose_name="Program / Bölüm"
     )
-    code = models.CharField(max_length=20)
+    code = models.IntegerField()
     description = models.TextField()
 
     class Meta:

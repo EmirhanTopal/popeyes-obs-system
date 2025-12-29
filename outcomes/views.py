@@ -53,3 +53,12 @@ def dekan_dashboard(request):
         'total_count': total_count,
     }
     return render(request, 'admin/outcomes/dekan_dashboard.html', context)
+
+def program_outcome_list(request):
+    outcomes = ProgramOutcome.objects.select_related("department").order_by(
+        "department__code", "code"
+    )
+
+    return render(request, "outcomes/program_outcome_list.html", {
+        "outcomes": outcomes
+    })

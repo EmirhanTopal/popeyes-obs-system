@@ -1,0 +1,100 @@
+/* ===============================
+   ADD COURSE TO DEPARTMENT
+   =============================== */
+
+.page-wrapper {
+    background: #f4f6f9;
+    min-height: 100vh;
+}
+
+/* CARD */
+.add-course-card {
+    border-radius: 14px;
+    border: none;
+}
+
+/* HEADER */
+.add-course-card .card-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #eef0f4;
+}
+
+.header-icon {
+    font-size: 1.4rem;
+    margin-right: 8px;
+}
+
+/* BODY */
+.add-course-card .card-body {
+    padding: 1.5rem 1.5rem 1.75rem;
+}
+
+/* DESCRIPTION */
+.add-course-card p.text-muted {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* SELECT */
+.add-course-card select.form-select {
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+}
+
+.add-course-card select.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+}
+
+/* ALERT */
+.add-course-card .alert-success {
+    border-radius: 10px;
+    font-size: 0.9rem;
+}
+
+/* BUTTONS */
+.add-course-card .btn {
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.add-course-card .btn-primary {
+    padding: 0.55rem 1.75rem;
+}
+
+.add-course-card .btn-outline-secondary {
+    padding: 0.55rem 1.5rem;
+}
+
+/* HR */
+.add-course-card hr {
+    margin: 1.5rem 0;
+    opacity: 0.1;
+}
+
+/* BACK BUTTON */
+.page-wrapper > .container > a.btn {
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+/* RESPONSIVE */
+@media (max-width: 576px) {
+    .add-course-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .add-course-card .btn {
+        width: 100%;
+    }
+
+    .add-course-card .btn-outline-secondary {
+        margin-left: 0 !important;
+        margin-top: 0.5rem;
+    }
+
+    .add-course-card .d-flex {
+        flex-direction: column;
+    }
+}

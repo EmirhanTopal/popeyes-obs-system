@@ -1,0 +1,72 @@
+/* ========== PAGE WRAPPER ========== */
+.hod-course-detail {
+    background: linear-gradient(135deg, #f4f7fb, #eef2f7);
+    min-height: calc(100vh - 80px);
+}
+
+/* ========== TABS ========== */
+.hod-course-detail .custom-tabs .nav-link {
+    font-weight: 600;
+    color: #555;
+}
+
+.hod-course-detail .custom-tabs .nav-link.active {
+    color: #0d6efd;
+    border-bottom: 3px solid #0d6efd;
+}
+
+/* ========== CARD ========== */
+.hod-course-detail .tab-card {
+    background: #fff;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.08);
+}
+
+/* ========== INFO BOX ========== */
+.hod-course-detail .info-box {
+    background: #f9fbfd;
+    border-radius: 12px;
+    padding: 18px;
+    border: 1px solid #e1e7f0;
+    margin-bottom: 20px;
+}
+
+.hod-course-detail .label {
+    font-weight: 600;
+    color: #555;
+}
+
+/* ========== SUBTITLE ========== */
+.hod-course-detail .section-subtitle {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* ========== LIST GROUP ========== */
+.hod-course-detail .list-group-item {
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* ========== BADGE ========== */
+.hod-course-detail .semester-badge {
+    background-color: #e3f2fd;
+    color: #0d6efd;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.4em 0.75em;
+}
+
+/* ========== TABLE ========== */
+.hod-course-detail table th {
+    font-weight: 600;
+    color: #555;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .hod-course-detail .tab-card {
+        padding: 16px;
+    }
+}
