@@ -120,12 +120,12 @@
 }
 
 .dean-dashboard .btn-success {
-    background: linear-gradient(45deg, #198754, #20c997);
+    background: linear-gradient(45deg, #0d6efd, #0dcaf0);
     border: none;
 }
 
 .dean-dashboard .btn-success:hover {
-    background: linear-gradient(45deg, #157347, #1aa179);
+    background: linear-gradient(45deg, #0b5ed7, #0bbcd6);
 }
 
 .dean-dashboard .btn-outline-primary:hover {
